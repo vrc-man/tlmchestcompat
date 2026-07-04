@@ -14,6 +14,18 @@ public class ModItems {
         "backpack_bauble", () -> new Item(new Item.Properties().stacksTo(1))
     );
 
+    public static final RegistryObject<Item> TRUE_IMMORTAL_BAUBLE = ITEMS.register(
+        "true_immortal_bauble", () -> new Item(new Item.Properties().stacksTo(1))
+    );
+
+    public static final RegistryObject<Item> INFO_SCANNER = ITEMS.register(
+        "info_scanner", InfoScannerItem::new
+    );
+
+    public static final RegistryObject<Item> EFFECT_IMMUNE_BAUBLE = ITEMS.register(
+        "effect_immune_bauble", () -> new Item(new Item.Properties().stacksTo(1))
+    );
+
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

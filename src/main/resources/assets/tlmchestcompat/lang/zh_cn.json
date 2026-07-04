@@ -1,4 +1,10 @@
 {
   "item.tlmchestcompat.backpack_bauble": "Backpack Storage Core",
-  "item.tlmchestcompat.backpack_bauble.tooltip": "女仆自动将物品存入背上的下界合金背包"
+  "item.tlmchestcompat.backpack_bauble.tooltip": "女仆自动将物品存入背上的下界合金背包",
+  "item.tlmchestcompat.true_immortal_bauble": "Kill不死护符",
+  "item.tlmchestcompat.true_immortal_bauble.tooltip": "女仆专用，免疫一切伤害包括/kill",
+  "item.tlmchestcompat.info_scanner": "女仆信息扫描器",
+  "item.tlmchestcompat.info_scanner.tooltip": "右键女仆查看状态 | 潜行+右键全属性+9000 | 潜行+空气切换HUD",
+  "item.tlmchestcompat.effect_immune_bauble": "状态免疫护符",
+  "item.tlmchestcompat.effect_immune_bauble.tooltip": "女仆专用，免疫失明/疲劳/缓慢"
 }
