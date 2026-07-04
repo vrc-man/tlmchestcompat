@@ -1,6 +1,8 @@
 package com.example;
 
 import com.example.network.MaidDataPacket;
+import com.example.network.TpsPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -8,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,6 +19,8 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 
 @Mod("tlmchestcompat")
 public class TlmChestCompat {
+    private int tpsTick = 0;
+
     public TlmChestCompat() {
         var bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(bus);
@@ -25,6 +30,23 @@ public class TlmChestCompat {
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.example.client.ClientInit.init();
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        tpsTick++;
+        if (tpsTick < 100) return;
+        tpsTick = 0;
+
+        MinecraftServer server = event.getServer();
+        double mspt = server.getAverageTickTime();
+        float tps = (float) Math.min(1000.0 / Math.max(mspt, 1.0), 20.0);
+
+        TpsPacket pkt = new TpsPacket(tps);
+        for (var player : server.getPlayerList().getPlayers()) {
+            ModNetwork.sendToPlayer(player, pkt);
         }
     }
 

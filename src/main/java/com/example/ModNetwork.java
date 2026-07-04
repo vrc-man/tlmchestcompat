@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.network.MaidDataPacket;
+import com.example.network.TpsPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
@@ -19,6 +20,8 @@ public class ModNetwork {
     public static void register() {
         CHANNEL.registerMessage(id++, MaidDataPacket.class,
             MaidDataPacket::encode, MaidDataPacket::decode, MaidDataPacket::handle);
+        CHANNEL.registerMessage(id++, TpsPacket.class,
+            TpsPacket::encode, TpsPacket::decode, TpsPacket::handle);
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {

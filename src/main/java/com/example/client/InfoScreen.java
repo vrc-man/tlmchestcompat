@@ -2,6 +2,7 @@ package com.example.client;
 
 import com.example.network.MaidDataPacket;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -15,6 +16,14 @@ public class InfoScreen extends Screen {
     public InfoScreen(MaidDataPacket data) {
         super(Component.literal(""));
         this.data = data;
+    }
+
+    @Override
+    protected void init() {
+        addRenderableWidget(Button.builder(
+            Component.literal("\u00A77[HUD \u8BBE\u7F6E]"),
+            b -> this.minecraft.setScreen(new HudConfigScreen()))
+            .bounds(width / 2 - 40, height / 2 + 115, 80, 16).build());
     }
 
     @Override
