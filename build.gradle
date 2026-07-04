@@ -1,0 +1,33 @@
+plugins {
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
+}
+
+version = '1.0.0'
+group = 'com.example'
+archivesBaseName = 'tlmchestcompat'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    runs {
+        client { workingDirectory project.file('run') }
+        server { workingDirectory project.file('run') }
+    }
+}
+
+repositories {
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.33'
+    compileOnly 'com.example:tlm:1.0.0'
+    compileOnly 'com.example:curios:5.14.1'
+}
+
+jar {
+    manifest { attributes(['Specification-Title': 'tlmchestcompat', 'Specification-Version': '1']) }
+}
