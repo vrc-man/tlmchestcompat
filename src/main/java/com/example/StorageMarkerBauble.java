@@ -67,16 +67,62 @@ public class StorageMarkerBauble implements IMaidBauble {
                 if (!passFilter(stack, filter, filterType)) continue;
                 var taken = containerInv.extractItem(i, 1, false);
                 if (taken.isEmpty()) continue;
-                for (int j = 0; j < maidInv.getSlots(); j++) {
-                    if (maidInv.getStackInSlot(j).isEmpty()) {
-                        maidInv.setStackInSlot(j, taken);
-                        return;
-                    }
-                }
+                if (tryAddToMaid(maidInv, taken)) return;
                 containerInv.insertItem(i, taken, false);
                 return;
             }
         }
+
+        // 3. Restock task items: pull filtered items if maid has fewer than 4
+        for (int i = 0; i < containerInv.getSlots(); i++) {
+            var stack = containerInv.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
+            if (stack.getItem().isEdible()) continue; // food handled above
+            if (!passFilter(stack, filter, filterType)) continue;
+
+            int maidCount = countInMaid(maidInv, stack);
+            if (maidCount >= 4) continue; // enough in inventory
+
+            int needed = Math.min(16 - maidCount, stack.getCount());
+            if (needed <= 0) continue;
+
+            var taken = containerInv.extractItem(i, needed, false);
+            if (taken.isEmpty()) continue;
+            if (!tryAddToMaid(maidInv, taken)) {
+                containerInv.insertItem(i, taken, false);
+            }
+        }
+    }
+
+    private int countInMaid(net.minecraftforge.items.ItemStackHandler inv, ItemStack stack) {
+        int count = 0;
+        for (int i = 0; i < inv.getSlots(); i++) {
+            var s = inv.getStackInSlot(i);
+            if (!s.isEmpty() && ItemStack.isSameItem(s, stack)) count += s.getCount();
+        }
+        return count;
+    }
+
+    private boolean tryAddToMaid(net.minecraftforge.items.ItemStackHandler maidInv, ItemStack stack) {
+        // Try merging with existing stacks first
+        for (int i = 0; i < maidInv.getSlots(); i++) {
+            var s = maidInv.getStackInSlot(i);
+            if (!s.isEmpty() && ItemStack.isSameItem(s, stack) && s.getCount() < s.getMaxStackSize()) {
+                int space = s.getMaxStackSize() - s.getCount();
+                int transfer = Math.min(space, stack.getCount());
+                s.grow(transfer);
+                stack.shrink(transfer);
+                if (stack.isEmpty()) return true;
+            }
+        }
+        // Find empty slot
+        for (int i = 0; i < maidInv.getSlots(); i++) {
+            if (maidInv.getStackInSlot(i).isEmpty()) {
+                maidInv.setStackInSlot(i, stack);
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean passFilter(ItemStack stack, Set<String> filter, String filterType) {

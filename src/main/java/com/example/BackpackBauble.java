@@ -27,6 +27,7 @@ public class BackpackBauble implements IMaidBauble {
             ItemStackHandler maidInv = maid.getMaidInv();
             tryFeed(maid, maidInv, backpackInv);
             tryStore(maidInv, backpackInv);
+            tryRestock(maidInv, backpackInv);
         });
     }
 
@@ -104,6 +105,49 @@ public class BackpackBauble implements IMaidBauble {
 
     private boolean isSophBackpack(ItemStack stack) {
         return stack.getItem().getClass().getName().toLowerCase().contains("sophisticatedbackpacks");
+    }
+
+    private void tryRestock(ItemStackHandler maidInv, IItemHandler backpackInv) {
+        for (int i = 0; i < backpackInv.getSlots(); i++) {
+            var stack = backpackInv.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
+            if (stack.getItem().isEdible()) continue;
+            if (!isSophBackpack(stack) && isSkippable(stack)) continue;
+
+            int maidCount = 0;
+            for (int j = 0; j < maidInv.getSlots(); j++) {
+                var s = maidInv.getStackInSlot(j);
+                if (!s.isEmpty() && ItemStack.isSameItem(s, stack)) maidCount += s.getCount();
+            }
+            if (maidCount >= 4) continue;
+
+            int needed = Math.min(16 - maidCount, stack.getCount());
+            if (needed <= 0) continue;
+
+            var taken = backpackInv.extractItem(i, needed, false);
+            if (taken.isEmpty()) continue;
+
+            // Merge with existing or find empty slot
+            boolean added = false;
+            for (int j = 0; j < maidInv.getSlots() && !taken.isEmpty(); j++) {
+                var s = maidInv.getStackInSlot(j);
+                if (!s.isEmpty() && ItemStack.isSameItem(s, taken) && s.getCount() < s.getMaxStackSize()) {
+                    int space = s.getMaxStackSize() - s.getCount();
+                    int transfer = Math.min(space, taken.getCount());
+                    s.grow(transfer);
+                    taken.shrink(transfer);
+                    if (taken.isEmpty()) added = true;
+                }
+            }
+            for (int j = 0; j < maidInv.getSlots() && !taken.isEmpty(); j++) {
+                if (maidInv.getStackInSlot(j).isEmpty()) {
+                    maidInv.setStackInSlot(j, taken);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) backpackInv.insertItem(i, taken, false);
+        }
     }
 
     private boolean isSkippable(ItemStack stack) {

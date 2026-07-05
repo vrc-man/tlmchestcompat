@@ -13,6 +13,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -64,6 +65,71 @@ public class TlmChestCompat {
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onMaidRequestItem(com.github.tartaricacid.touhoulittlemaid.api.event.MaidRequestItemEvent event) {
+        // When TLM AI needs an item (seed, arrow, etc.) and can't find it,
+        // check if it's in the Sophisticated Backpack and pull it out
+        var maid = event.getMaid();
+        if (maid.level().isClientSide) return;
+
+        // Check if any equipped bauble uses backpack storage
+        var bauble = maid.getMaidBauble();
+        boolean hasBackpackBauble = false;
+        for (int i = 0; i < bauble.getSlots(); i++) {
+            var item = bauble.getStackInSlot(i).getItem();
+            if (item == ModItems.BACKPACK_BAUBLE.get() || item == ModItems.STORAGE_MARKER.get()) {
+                hasBackpackBauble = true;
+                break;
+            }
+        }
+        if (!hasBackpackBauble) return;
+
+        // Try to find the item in the curios back slot backpack
+        try {
+            var curiosOpt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(maid).resolve();
+            if (curiosOpt.isPresent()) {
+                var curios = curiosOpt.get().getClass().getMethod("getCurios").invoke(curiosOpt.get());
+                if (curios instanceof java.util.Map) {
+                    var val = ((java.util.Map<?, ?>) curios).get("back");
+                    if (val != null) {
+                        var stacks = val.getClass().getMethod("getStacks").invoke(val);
+                        int slots = (int) stacks.getClass().getMethod("getSlots").invoke(stacks);
+                        var getStk = stacks.getClass().getMethod("getStackInSlot", int.class);
+                        for (int i = 0; i < slots; i++) {
+                            var bpStack = (net.minecraft.world.item.ItemStack) getStk.invoke(stacks, i);
+                            if (bpStack.isEmpty()) continue;
+                            var cap = bpStack.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER);
+                            var resolved = cap.resolve();
+                            if (resolved.isEmpty()) continue;
+
+                            var filter = event.getItemFilter();
+                            var handler = resolved.get();
+                            for (int j = 0; j < handler.getSlots(); j++) {
+                                var stack = handler.getStackInSlot(j);
+                                if (stack.isEmpty() || !filter.test(stack)) continue;
+
+                                var taken = handler.extractItem(j, 1, false);
+                                if (taken.isEmpty()) continue;
+
+                                var maidInv = maid.getMaidInv();
+                                for (int k = 0; k < maidInv.getSlots(); k++) {
+                                    if (maidInv.getStackInSlot(k).isEmpty()) {
+                                        maidInv.setStackInSlot(k, taken);
+                                        event.setRequestedItem(taken);
+                                        return;
+                                    }
+                                }
+                                // No empty slot, put it back
+                                handler.insertItem(j, taken, false);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     @SubscribeEvent
