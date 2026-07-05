@@ -66,9 +66,9 @@ public class InfoScreen extends Screen {
 
         // Stats
         drawKV(g, "\u751F\u547D\u503C", c1, y, f0(data.health) + "/" + f0(data.maxHealth) + " \u00A77(base:" + f0(data.baseHp) + " x" + mult(data.maxHealth, data.baseHp) + ")", c2, y, 0xFF5555); y += lh;
-        drawKV(g, "\u62A4\u7532", c1, y, f0(data.armor) + " \u00A77(x" + mult(data.armor, data.baseArmor) + ")", c2, y, 0x55AAFF); y += lh;
-        drawKV(g, "\u97E7\u6027", c1, y, f0(data.toughness) + " \u00A77(x" + mult(data.toughness, data.baseToughness) + ")", c2, y, 0xAAAAAA); y += lh;
-        drawKV(g, "\u4F24\u5BB3", c1, y, f1(data.damage) + " \u00A77(x" + mult(data.damage, data.baseDamage) + ")", c2, y, 0xFF5555); y += lh;
+        drawKV(g, "\u62A4\u7532", c1, y, statStr(data.armor, data.baseArmor), c2, y, 0x55AAFF); y += lh;
+        drawKV(g, "\u97E7\u6027", c1, y, statStr(data.toughness, data.baseToughness), c2, y, 0xAAAAAA); y += lh;
+        drawKV(g, "\u4F24\u5BB3", c1, y, statStr(data.damage, data.baseDamage), c2, y, 0xFF5555); y += lh;
 
         sep(g, px + 10, y, W - 20); y += 7;
 
@@ -120,5 +120,9 @@ public class InfoScreen extends Screen {
     private String f1(double v) { return String.format("%.1f", v); }
     private String f2(double v) { return String.format("%.2f", v); }
     private String mult(float v, float b) { return b <= 0 ? "0" : String.format("%.2f", v / b); }
+    private String statStr(float val, float base) {
+        if (base > 0) return f0(val) + " \u00A77(x" + mult(val, base) + ")";
+        return f0(val) + " \u00A77(+" + f0(val) + ")";
+    }
     private String trunc(String s, int n) { return s.length() > n ? s.substring(0, n) + ".." : s; }
 }

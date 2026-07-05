@@ -12,7 +12,7 @@ import top.theillusivec4.curios.api.CuriosApi;
 import java.util.Optional;
 
 public class BackpackBauble implements IMaidBauble {
-    private static final int TRANSFER_INTERVAL = 10;
+    private static final int TRANSFER_INTERVAL = 20;
     private static final int HUNGER_THRESHOLD = 15;
 
     @Override

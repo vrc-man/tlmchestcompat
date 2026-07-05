@@ -71,16 +71,30 @@ public class ModCommands {
             .then(Commands.argument("slotType", StringArgumentType.word())
                 .suggests(SLOT_SUGGESTIONS)
                 .executes(ctx -> addSlot(ctx.getSource(),
-                    StringArgumentType.getString(ctx, "slotType"), null, 8))
+                    StringArgumentType.getString(ctx, "slotType"), null, 8, 1))
+                .then(Commands.argument("count", IntegerArgumentType.integer(1, 999))
+                    .executes(ctx -> addSlot(ctx.getSource(),
+                        StringArgumentType.getString(ctx, "slotType"), null, 8,
+                        IntegerArgumentType.getInteger(ctx, "count"))))
                 .then(Commands.literal("near")
                     .then(Commands.argument("range", IntegerArgumentType.integer(1, 100))
                         .executes(ctx -> addSlot(ctx.getSource(),
                             StringArgumentType.getString(ctx, "slotType"), null,
-                            IntegerArgumentType.getInteger(ctx, "range")))))
+                            IntegerArgumentType.getInteger(ctx, "range"), 1))
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 999))
+                            .executes(ctx -> addSlot(ctx.getSource(),
+                                StringArgumentType.getString(ctx, "slotType"), null,
+                                IntegerArgumentType.getInteger(ctx, "range"),
+                                IntegerArgumentType.getInteger(ctx, "count"))))))
                 .then(Commands.argument("uuid", StringArgumentType.word())
                     .executes(ctx -> addSlot(ctx.getSource(),
                         StringArgumentType.getString(ctx, "slotType"),
-                        StringArgumentType.getString(ctx, "uuid"), 8)))));
+                        StringArgumentType.getString(ctx, "uuid"), 8, 1))
+                    .then(Commands.argument("count", IntegerArgumentType.integer(1, 999))
+                        .executes(ctx -> addSlot(ctx.getSource(),
+                            StringArgumentType.getString(ctx, "slotType"),
+                            StringArgumentType.getString(ctx, "uuid"), 8,
+                            IntegerArgumentType.getInteger(ctx, "count")))))));
     }
 
     private static int addAttr(CommandSourceStack src, String attr, double value, String uuid) {
@@ -109,7 +123,7 @@ public class ModCommands {
         return 1;
     }
 
-    private static int addSlot(CommandSourceStack src, String slotType, String uuid, int range) {
+    private static int addSlot(CommandSourceStack src, String slotType, String uuid, int range, int count) {
         ServerPlayer player;
         try { player = src.getPlayerOrException(); } catch (Exception e) { return 0; }
 
@@ -123,19 +137,19 @@ public class ModCommands {
         var maid = findMaid(player, uuid, range);
         if (maid == null) return 0;
 
+        final int fCount = count;
         CuriosApi.getCuriosInventory(maid).ifPresent(handler -> {
-            var sig = "addPermanentSlotModifier(java.lang.String,java.util.UUID," +
-                "java.lang.String,double," +
-                "net.minecraft.world.entity.ai.attributes.AttributeModifier$Operation)";
             try {
-                var method = handler.getClass().getMethod(sig,
+                var method = handler.getClass().getMethod("addPermanentSlotModifier",
                     String.class, UUID.class, String.class, double.class,
                     net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.class);
-                method.invoke(handler, slotType, UUID.randomUUID(),
-                    "cmd_" + slotType, 1.0,
-                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION);
+                for (int i = 0; i < fCount; i++) {
+                    method.invoke(handler, slotType, UUID.randomUUID(),
+                        "cmd_" + slotType + "_" + i, 1.0,
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION);
+                }
                 player.sendSystemMessage(Component.literal("\u00A7a\u5DF2\u4E3A " + maid.getName().getString()
-                    + " \u589E\u52A0 1 \u4E2A\u00A7e" + slotType + " \u00A7a\u69FD\u4F4D"));
+                    + " \u589E\u52A0 " + fCount + " \u4E2A\u00A7e" + slotType + " \u00A7a\u69FD\u4F4D"));
             } catch (Exception e) {
                 player.sendSystemMessage(Component.literal("\u00A7c\u9519\u8BEF: " + e.getMessage()));
             }

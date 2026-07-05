@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StorageMarkerBauble implements IMaidBauble {
-    private static final int INTERVAL = 20;
+    private static final int INTERVAL = 60;
     private static final int HUNGER_THRESHOLD = 15;
 
     @Override
