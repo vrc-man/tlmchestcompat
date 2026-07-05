@@ -28,7 +28,7 @@ public class ModItems {
 
     public static final RegistryObject<Item> EFFECT_IMMUNE_BAUBLE = ITEMS.register(
         "effect_immune_bauble", () -> new BaubleItem(
-            "\u00A77\u5973\u4EC6\u4E13\u7528\uFF0C\u514D\u75AB\u5931\u660E/\u7B2C\u52B3/\u7F13\u6162")
+            "\u00A77\u5973\u4EC6\u4E13\u7528\uFF0C\u514D\u75AB\u5931\u660E/\u75B2\u52B3/\u7F13\u6162")
     );
 
     public static final RegistryObject<Item> STORAGE_MARKER = ITEMS.register(

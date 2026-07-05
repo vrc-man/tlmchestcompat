@@ -85,7 +85,7 @@ public class InfoScreen extends Screen {
 
         sep(g, px + 10, y + 10, W - 20);
 
-        drawC(g, "\u00A77[\u6F5C\u884C+\u53F3\u952E: \u5168\u5C5E\u6027+9000]", px + W / 2, py + H - 12, 0x888888);
+        drawC(g, "\u00A77[\u6F5C\u884C+\u53F3\u952E: \u5168\u5C5E\u6027+9000]", px + W / 2, py + H - 36, 0x888888);
     }
 
     private void drawKV(GuiGraphics g, String k, int x1, int y1, String v, int x2, int y2, int vc) {
