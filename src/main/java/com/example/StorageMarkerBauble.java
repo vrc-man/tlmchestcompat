@@ -97,19 +97,19 @@ public class StorageMarkerBauble implements IMaidBauble {
 
     private boolean isBackpackFull(EntityMaid maid) {
         var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(maid).resolve();
-        if (opt.isEmpty()) return false;
+        if (opt.isEmpty()) return true;
         try {
             var curios = opt.get().getClass().getMethod("getCurios").invoke(opt.get());
             if (curios instanceof java.util.Map) {
                 var val = ((java.util.Map<?, ?>) curios).get("back");
-                if (val != null) {
-                    var stacks = val.getClass().getMethod("getStacks").invoke(val);
-                    int slots = (int) stacks.getClass().getMethod("getSlots").invoke(stacks);
-                    var getStack = stacks.getClass().getMethod("getStackInSlot", int.class);
-                    for (int i = 0; i < slots; i++) {
-                        var s = (ItemStack) getStack.invoke(stacks, i);
-                        if (s.isEmpty() || s.getCount() < s.getMaxStackSize()) return false;
-                    }
+                if (val == null) return true;
+                var stacks = val.getClass().getMethod("getStacks").invoke(val);
+                int slots = (int) stacks.getClass().getMethod("getSlots").invoke(stacks);
+                var getStack = stacks.getClass().getMethod("getStackInSlot", int.class);
+                for (int i = 0; i < slots; i++) {
+                    var s = (ItemStack) getStack.invoke(stacks, i);
+                    if (s.isEmpty()) return true;  // No backpack in slot → let storage marker handle it
+                    if (s.getCount() < s.getMaxStackSize()) return false;
                 }
             }
         } catch (Exception ignored) {}

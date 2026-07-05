@@ -47,7 +47,7 @@ public class MarkerConfigPacket {
             var player = ctx.get().getSender();
             if (player == null) return;
             var stack = player.getMainHandItem();
-            if (stack.isEmpty() || !stack.getItem().getClass().getName().contains("StorageMarker")) return;
+            if (stack.isEmpty() || !(stack.getItem() instanceof com.example.StorageMarkerItem)) return;
 
             var tag = stack.getOrCreateTag();
             tag.putString("FilterType", filterType);
