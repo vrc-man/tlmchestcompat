@@ -26,6 +26,7 @@ public class TlmChestCompat {
         var bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(bus);
         ModCreativeTab.register(bus);
+        MarkerMenuType.register(bus);
         ModNetwork.register();
         MinecraftForge.EVENT_BUS.register(this);
 
@@ -92,13 +93,13 @@ public class TlmChestCompat {
         pkt.ownerName = maid.getOwner() instanceof ServerPlayer o ? o.getName().getString() : "none";
         pkt.health = maid.getHealth();
         pkt.maxHealth = maid.getMaxHealth();
-        pkt.baseHp = (float) attr.getValue(Attributes.MAX_HEALTH);
-        pkt.armor = maid.getArmorValue();
-        pkt.baseArmor = (float) attr.getValue(Attributes.ARMOR);
+        pkt.baseHp = (float) attr.getBaseValue(Attributes.MAX_HEALTH);
+        pkt.armor = (float) attr.getValue(Attributes.ARMOR);
+        pkt.baseArmor = (float) attr.getBaseValue(Attributes.ARMOR);
         pkt.toughness = (float) attr.getValue(Attributes.ARMOR_TOUGHNESS);
-        pkt.baseToughness = (float) attr.getValue(Attributes.ARMOR_TOUGHNESS);
+        pkt.baseToughness = (float) attr.getBaseValue(Attributes.ARMOR_TOUGHNESS);
         pkt.damage = (float) attr.getValue(Attributes.ATTACK_DAMAGE);
-        pkt.baseDamage = (float) attr.getValue(Attributes.ATTACK_DAMAGE);
+        pkt.baseDamage = (float) attr.getBaseValue(Attributes.ATTACK_DAMAGE);
         pkt.explosion = d.getInt("attrExplosion");
         pkt.thorns = d.getInt("attrThorns");
         pkt.tough = d.getInt("attrTough");

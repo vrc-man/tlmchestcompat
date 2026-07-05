@@ -12,6 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class InfoScreen extends Screen {
     private final MaidDataPacket data;
     private static final int W = 240, H = 270;
+    private int uuidY, uuidEndX;
 
     public InfoScreen(MaidDataPacket data) {
         super(Component.literal(""));
@@ -23,7 +24,15 @@ public class InfoScreen extends Screen {
         addRenderableWidget(Button.builder(
             Component.literal("\u00A77[HUD \u8BBE\u7F6E]"),
             b -> this.minecraft.setScreen(new HudConfigScreen()))
-            .bounds(width / 2 - 40, height / 2 + 115, 80, 16).build());
+            .bounds(width / 2 - 88, height / 2 + 115, 80, 16).build());
+
+        addRenderableWidget(Button.builder(
+            Component.literal("\u00A7e[\u590D\u5236UUID]"),
+            b -> {
+                if (data != null) {
+                    this.minecraft.keyboardHandler.setClipboard(data.uuid);
+                }
+            }).bounds(width / 2 + 8, height / 2 + 115, 80, 16).build());
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -70,17 +71,22 @@ public class ModCommands {
             .then(Commands.argument("slotType", StringArgumentType.word())
                 .suggests(SLOT_SUGGESTIONS)
                 .executes(ctx -> addSlot(ctx.getSource(),
-                    StringArgumentType.getString(ctx, "slotType"), null))
+                    StringArgumentType.getString(ctx, "slotType"), null, 8))
+                .then(Commands.literal("near")
+                    .then(Commands.argument("range", IntegerArgumentType.integer(1, 100))
+                        .executes(ctx -> addSlot(ctx.getSource(),
+                            StringArgumentType.getString(ctx, "slotType"), null,
+                            IntegerArgumentType.getInteger(ctx, "range")))))
                 .then(Commands.argument("uuid", StringArgumentType.word())
                     .executes(ctx -> addSlot(ctx.getSource(),
                         StringArgumentType.getString(ctx, "slotType"),
-                        StringArgumentType.getString(ctx, "uuid"))))));
+                        StringArgumentType.getString(ctx, "uuid"), 8)))));
     }
 
     private static int addAttr(CommandSourceStack src, String attr, double value, String uuid) {
         ServerPlayer player;
         try { player = src.getPlayerOrException(); } catch (Exception e) { return 0; }
-        var maid = findMaid(player, uuid);
+        var maid = findMaid(player, uuid, 8);
         if (maid == null) return 0;
 
         var key = ATTR_MAP.get(attr.toLowerCase());
@@ -103,11 +109,10 @@ public class ModCommands {
         return 1;
     }
 
-    private static int addSlot(CommandSourceStack src, String slotType, String uuid) {
+    private static int addSlot(CommandSourceStack src, String slotType, String uuid, int range) {
         ServerPlayer player;
         try { player = src.getPlayerOrException(); } catch (Exception e) { return 0; }
 
-        // Validate slot exists
         if (!CuriosApi.getSlots(true).containsKey(slotType)) {
             player.sendSystemMessage(Component.literal("\u00A7c\u69FD\u4F4D\u7C7B\u578B\u4E0D\u5B58\u5728: " + slotType));
             var available = String.join(", ", CuriosApi.getSlots(true).keySet());
@@ -115,7 +120,7 @@ public class ModCommands {
             return 0;
         }
 
-        var maid = findMaid(player, uuid);
+        var maid = findMaid(player, uuid, range);
         if (maid == null) return 0;
 
         CuriosApi.getCuriosInventory(maid).ifPresent(handler -> {
@@ -138,7 +143,7 @@ public class ModCommands {
         return 1;
     }
 
-    private static TamableAnimal findMaid(ServerPlayer player, String uuid) {
+    private static TamableAnimal findMaid(ServerPlayer player, String uuid, int range) {
         var level = player.serverLevel();
 
         if (uuid != null) {
@@ -154,12 +159,12 @@ public class ModCommands {
             }
         }
 
-        var aabb = new AABB(player.blockPosition()).inflate(8);
+        var aabb = new AABB(player.blockPosition()).inflate(range);
         var maids = level.getEntitiesOfClass(TamableAnimal.class, aabb,
             m -> m.getOwner() == player);
 
         if (maids.isEmpty()) {
-            player.sendSystemMessage(Component.literal("\u00A7c\u9644\u8FD1\u6CA1\u6709\u5973\u4EC6"));
+            player.sendSystemMessage(Component.literal("\u00A7c" + range + "\u683C\u5185\u6CA1\u6709\u5973\u4EC6"));
             return null;
         }
 

@@ -11,4 +11,12 @@ public class TrueImmortalBauble implements IMaidBauble {
         maid.setHealth(maid.getMaxHealth());
         return true;
     }
+
+    @Override
+    public void onTick(EntityMaid maid, ItemStack stack) {
+        if (maid.level().isClientSide) return;
+        if (maid.getHealth() <= 0) {
+            maid.setHealth(maid.getMaxHealth());
+        }
+    }
 }

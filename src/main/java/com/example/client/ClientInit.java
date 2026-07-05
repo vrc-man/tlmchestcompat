@@ -16,10 +16,18 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @OnlyIn(Dist.CLIENT)
 @SuppressWarnings("removal")
 public class ClientInit {
+    @SuppressWarnings("removal")
     public static void init() {
         var bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.register(new ClientInit());
         MinecraftForge.EVENT_BUS.register(new ForgeEvents());
+    }
+
+    @SubscribeEvent
+    public void onClientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(() -> net.minecraft.client.gui.screens.MenuScreens.register(
+            com.example.MarkerMenuType.MARKER_MENU.get(),
+            com.example.client.MarkerScreen::new));
     }
 
     @SubscribeEvent

@@ -4,9 +4,16 @@ import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class StorageMarkerBauble implements IMaidBauble {
     private static final int INTERVAL = 20;
@@ -17,16 +24,15 @@ public class StorageMarkerBauble implements IMaidBauble {
         if (maid.level().isClientSide) return;
         if (maid.tickCount % INTERVAL != 0) return;
 
-        boolean backpackFull = hasBackpackBauble(maid) && isBackpackFull(maid);
-
         var tag = baubleItem.getTag();
         if (tag == null || !tag.contains("BoundPos")) return;
 
+        // Skip if backpack has space
+        if (hasBackpackBauble(maid) && !isBackpackFull(maid)) return;
+
         var pos = readBoundPos(tag);
         if (pos == null) return;
-
-        String dim = tag.getString("BoundDim");
-        if (!dim.equals(maid.level().dimension().location().toString())) return;
+        if (!tag.getString("BoundDim").equals(maid.level().dimension().location().toString())) return;
         if (!maid.level().hasChunkAt(pos)) return;
 
         var be = maid.level().getBlockEntity(pos);
@@ -38,11 +44,27 @@ public class StorageMarkerBauble implements IMaidBauble {
         var containerInv = opt.get();
         var maidInv = maid.getMaidInv();
 
-        // Take food if hungry
+        String filterType = tag.contains("FilterType") ? tag.getString("FilterType") : "blacklist";
+        Set<String> filter = readFilter(tag);
+
+        // 1. Deposit: maid → container
+        for (int i = 0; i < maidInv.getSlots(); i++) {
+            var stack = maidInv.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
+            if (isSkippable(stack)) continue;
+            if (!passFilter(stack, filter, filterType)) continue;
+
+            var remaining = ItemHandlerHelper.insertItemStacked(containerInv, stack, false);
+            maidInv.setStackInSlot(i, remaining);
+            if (remaining.isEmpty()) break;
+        }
+
+        // 2. Withdraw food if hungry
         if (maid.getHunger() < HUNGER_THRESHOLD && !hasFood(maidInv)) {
             for (int i = 0; i < containerInv.getSlots(); i++) {
                 var stack = containerInv.getStackInSlot(i);
                 if (stack.isEmpty() || !stack.getItem().isEdible()) continue;
+                if (!passFilter(stack, filter, filterType)) continue;
                 var taken = containerInv.extractItem(i, 1, false);
                 if (taken.isEmpty()) continue;
                 for (int j = 0; j < maidInv.getSlots(); j++) {
@@ -55,18 +77,14 @@ public class StorageMarkerBauble implements IMaidBauble {
                 return;
             }
         }
+    }
 
-        // Deposit items (only if backpack is full or not present)
-        if (!backpackFull) return;
-
-        for (int i = 0; i < maidInv.getSlots(); i++) {
-            var stack = maidInv.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
-            if (isBauble(stack)) continue;
-            var remaining = ItemHandlerHelper.insertItemStacked(containerInv, stack, false);
-            maidInv.setStackInSlot(i, remaining);
-            if (remaining.isEmpty()) break;
-        }
+    private boolean passFilter(ItemStack stack, Set<String> filter, String filterType) {
+        var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (id == null) return true;
+        String idStr = id.toString();
+        if (filterType.equals("whitelist")) return filter.contains(idStr);
+        return !filter.contains(idStr); // blacklist
     }
 
     private boolean hasFood(net.minecraftforge.items.ItemStackHandler inv) {
@@ -134,7 +152,26 @@ public class StorageMarkerBauble implements IMaidBauble {
         tag.put("BoundPos", t);
     }
 
-    private boolean isBauble(ItemStack stack) {
+    public static Set<String> readFilter(CompoundTag tag) {
+        var set = new HashSet<String>();
+        if (tag.contains("FilterItems")) {
+            var list = tag.getList("FilterItems", 8);
+            for (int i = 0; i < list.size(); i++) {
+                set.add(list.getString(i));
+            }
+        }
+        return set;
+    }
+
+    public static void writeFilter(CompoundTag tag, Set<String> items) {
+        var list = new ListTag();
+        for (var id : items) {
+            list.add(StringTag.valueOf(id));
+        }
+        tag.put("FilterItems", list);
+    }
+
+    private boolean isSkippable(ItemStack stack) {
         var id = stack.getItem();
         return id == ModItems.BACKPACK_BAUBLE.get()
             || id == ModItems.TRUE_IMMORTAL_BAUBLE.get()
