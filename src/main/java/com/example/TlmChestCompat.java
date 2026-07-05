@@ -119,23 +119,25 @@ public class TlmChestCompat {
     }
 
     public static void applyAttrs(LivingEntity maid, net.minecraft.nbt.CompoundTag d) {
-        var uuid = java.util.UUID.randomUUID();
         var OpADD = net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION;
 
         java.util.function.BiConsumer<net.minecraft.world.entity.ai.attributes.Attribute, Double> applyA = (attr, v) -> {
             if (attr == null || v <= 0) return;
             var inst = maid.getAttribute(attr);
             if (inst == null) return;
+            // Collect UUIDs first to avoid ConcurrentModificationException
+            var toRemove = new java.util.ArrayList<java.util.UUID>();
             for (var m : inst.getModifiers()) {
                 if (m.getName().equals("kjs_hp") || m.getName().equals("kjs_armor") ||
                     m.getName().equals("kjs_tough") || m.getName().equals("kjs_dmg") ||
                     m.getName().equals("kjs_spd") || m.getName().equals("kjs_resist") ||
                     m.getName().equals("kjs_reach") || m.getName().equals("kjs_dig")) {
-                    inst.removeModifier(m);
+                    toRemove.add(m.getId());
                 }
             }
+            for (var id : toRemove) inst.removeModifier(id);
             inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                uuid, "kjs_" + attr.getDescriptionId(), v, OpADD));
+                java.util.UUID.randomUUID(), "kjs_" + attr.getDescriptionId(), v, OpADD));
         };
 
         applyA.accept(Attributes.MAX_HEALTH, (double) Math.min(d.getInt("eatHP"), 900));
@@ -149,15 +151,16 @@ public class TlmChestCompat {
         if (resist > 0) {
             var inst = maid.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
             if (inst != null) {
+                var toRemove = new java.util.ArrayList<java.util.UUID>();
                 for (var m : inst.getModifiers()) {
-                    if (m.getName().equals("kjs_resist")) inst.removeModifier(m);
+                    if (m.getName().equals("kjs_resist")) toRemove.add(m.getId());
                 }
+                for (var id : toRemove) inst.removeModifier(id);
                 inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                    uuid, "kjs_resist", resist * 0.1, OpADD));
+                    java.util.UUID.randomUUID(), "kjs_resist", resist * 0.1, OpADD));
             }
         }
 
-        // ForgeMod reach attributes
         try {
             var FM = Class.forName("net.minecraftforge.common.ForgeMod");
             var reachA = (net.minecraft.world.entity.ai.attributes.Attribute) FM.getField("ENTITY_REACH").get(null);
@@ -167,22 +170,26 @@ public class TlmChestCompat {
             if (reach > 0 && reachA != null) {
                 var inst = maid.getAttribute(reachA);
                 if (inst != null) {
+                    var toRemove = new java.util.ArrayList<java.util.UUID>();
                     for (var m : inst.getModifiers()) {
-                        if (m.getName().equals("kjs_reach")) inst.removeModifier(m);
+                        if (m.getName().equals("kjs_reach")) toRemove.add(m.getId());
                     }
+                    for (var id : toRemove) inst.removeModifier(id);
                     inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                        uuid, "kjs_reach", reach, OpADD));
+                        java.util.UUID.randomUUID(), "kjs_reach", reach, OpADD));
                 }
             }
             double dig = d.getDouble("attrDig");
             if (dig > 0 && blockA != null) {
                 var inst = maid.getAttribute(blockA);
                 if (inst != null) {
+                    var toRemove = new java.util.ArrayList<java.util.UUID>();
                     for (var m : inst.getModifiers()) {
-                        if (m.getName().equals("kjs_dig")) inst.removeModifier(m);
+                        if (m.getName().equals("kjs_dig")) toRemove.add(m.getId());
                     }
+                    for (var id : toRemove) inst.removeModifier(id);
                     inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                        uuid, "kjs_dig", dig, OpADD));
+                        java.util.UUID.randomUUID(), "kjs_dig", dig, OpADD));
                 }
             }
         } catch (Exception ignored) {}
