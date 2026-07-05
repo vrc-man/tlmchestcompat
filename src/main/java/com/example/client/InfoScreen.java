@@ -61,8 +61,6 @@ public class InfoScreen extends Screen {
         drawKV(g, "UUID", c1, y, trunc(data.uuid, 22), c2, y, 0xAAAAAA); y += lh;
         drawKV(g, "\u540D\u79F0", c1, y, data.name, c2, y, 0xFFFFAA); y += lh;
         drawKV(g, "\u4E3B\u4EBA", c1, y, data.ownerName, c2, y, 0x55FF55); y += lh;
-        drawKV(g, "\u540D\u79F0", c1, y, data.name, c2, y, 0xFFFFAA); y += lh;
-        drawKV(g, "\u4E3B\u4EBA", c1, y, data.ownerName, c2, y, 0x55FF55); y += lh;
 
         sep(g, px + 10, y, W - 20); y += 7;
 

@@ -76,7 +76,7 @@ public class TlmChestCompat {
         if (!(target instanceof TamableAnimal maid)) return;
         if (!player.isCreative() && maid.getOwner() != player) return;
 
-        if (player.isCrouching()) {
+        if (player.isCrouching() && player.isCreative()) {
             var d = maid.getPersistentData();
             d.putInt("eatHP", d.getInt("eatHP") + 9000);
             d.putInt("attrExplosion", d.getInt("attrExplosion") + 9000);
