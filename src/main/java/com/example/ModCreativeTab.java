@@ -19,6 +19,7 @@ public class ModCreativeTab {
             output.accept(ModItems.BACKPACK_BAUBLE.get());
             output.accept(ModItems.TRUE_IMMORTAL_BAUBLE.get());
             output.accept(ModItems.EFFECT_IMMUNE_BAUBLE.get());
+            output.accept(ModItems.STORAGE_MARKER.get());
         })
         .build());
 

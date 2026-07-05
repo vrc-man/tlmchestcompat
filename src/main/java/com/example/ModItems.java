@@ -26,6 +26,10 @@ public class ModItems {
         "effect_immune_bauble", () -> new Item(new Item.Properties().stacksTo(1))
     );
 
+    public static final RegistryObject<Item> STORAGE_MARKER = ITEMS.register(
+        "storage_marker", StorageMarkerItem::new
+    );
+
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

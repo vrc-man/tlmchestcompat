@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
+@SuppressWarnings("removal")
 @Mod("tlmchestcompat")
 public class TlmChestCompat {
     private int tpsTick = 0;
