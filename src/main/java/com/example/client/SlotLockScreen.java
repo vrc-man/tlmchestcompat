@@ -1,11 +1,10 @@
 package com.example.client;
 
 import com.example.ModNetwork;
-import com.example.SlotLockHelper;
 import com.example.network.SlotLockPacket;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,14 +31,8 @@ public class SlotLockScreen extends Screen {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 final int i = idx;
-                addRenderableWidget(new StateSwitchingButton(
-                    panelX + 10 + c * 18, panelY + 28 + r * 18, 16, 16, locks[idx]) {
-                    @Override
-                    public void onClick(double mx, double my) {
-                        this.isStateTriggered = !this.isStateTriggered;
-                        locks[i] = this.isStateTriggered;
-                    }
-                });
+                var btn = new SlotButton(panelX + 10 + c * 18, panelY + 28 + r * 18, locks, i);
+                addRenderableWidget(btn);
                 idx++;
             }
         }
@@ -65,27 +58,33 @@ public class SlotLockScreen extends Screen {
 
         int pw = COLS * 18 + 20, ph = ROWS * 18 + 70;
         g.fill(panelX, panelY, panelX + pw, panelY + ph, 0xCC1A1A2E);
-        drawCentered(g, "\u00A7b\u00A7l\u2726 \u69FD\u4F4D\u9501\u5B9A", panelX + pw / 2, panelY + 8, 0xFFFFFF);
-
-        // Draw slot labels
-        int idx = 0;
-        for (int r = 0; r < ROWS; r++) {
-            for (int c = 0; c < COLS; c++) {
-                int sx = panelX + 10 + c * 18;
-                int sy = panelY + 28 + r * 18;
-                // Draw slot background
-                g.fill(sx, sy, sx + 16, sy + 16, locks[idx] ? 0xFF664444 : 0xFF444466);
-                // Lock/unlock indicator
-                String sym = locks[idx] ? "\u00A7c\u26D7" : "\u00A7a\u25CB";
-                drawCentered(g, sym, sx + 8, sy + 4, 0xFFFFFF);
-                idx++;
-            }
-        }
-
-        drawCentered(g, "\u00A77\u8BB0\u5F55: \u70B9\u51FB\u5207\u6362\u9501\u5B9A", panelX + (COLS * 18 + 20) / 2, panelY + ROWS * 18 + 24, 0x888888);
+        drawC(g, "\u00A7b\u00A7l\u2726 \u69FD\u4F4D\u9501\u5B9A", panelX + pw / 2, panelY + 8, 0xFFFFFF);
+        drawC(g, "\u00A77\u70B9\u51FB\u5207\u6362", panelX + pw / 2, panelY + ROWS * 18 + 24, 0x888888);
     }
 
-    private void drawCentered(GuiGraphics g, String t, int x, int y, int c) {
+    private void drawC(GuiGraphics g, String t, int x, int y, int c) {
         g.drawString(font, t, x - font.width(t) / 2, y, c, false);
+    }
+
+    private static class SlotButton extends Button {
+        private final boolean[] locks;
+        private final int index;
+
+        SlotButton(int x, int y, boolean[] locks, int index) {
+            super(Button.builder(Component.literal(""), b -> {
+                locks[index] = !locks[index];
+            }).bounds(x, y, 16, 16));
+            this.locks = locks;
+            this.index = index;
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
+            int sx = getX(), sy = getY();
+            g.fill(sx, sy, sx + width, sy + height, locks[index] ? 0xFF994444 : 0xFF444466);
+            String sym = locks[index] ? "\u00A7c\u26D7" : "\u00A7a\u25CB";
+            var mc = Minecraft.getInstance();
+            g.drawString(mc.font, sym, sx + 4, sy + 3, 0xFFFFFF, false);
+        }
     }
 }
