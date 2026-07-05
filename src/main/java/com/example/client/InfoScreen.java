@@ -31,6 +31,8 @@ public class InfoScreen extends Screen {
             b -> {
                 if (data != null) {
                     this.minecraft.keyboardHandler.setClipboard(data.uuid);
+                    this.minecraft.player.sendSystemMessage(
+                        Component.literal("\u00A7aUUID\u5DF2\u590D\u5236\u5230\u526A\u8D34\u677F"));
                 }
             }).bounds(width / 2 + 8, height / 2 + 115, 80, 16).build());
     }

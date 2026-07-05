@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -49,6 +50,19 @@ public class TlmChestCompat {
         TpsPacket pkt = new TpsPacket(tps);
         for (var player : server.getPlayerList().getPlayers()) {
             ModNetwork.sendToPlayer(player, pkt);
+        }
+    }
+
+    @SubscribeEvent
+    public void onLivingHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
+            var bauble = maid.getMaidBauble();
+            for (int i = 0; i < bauble.getSlots(); i++) {
+                if (bauble.getStackInSlot(i).getItem() == ModItems.TRUE_IMMORTAL_BAUBLE.get()) {
+                    event.setCanceled(true);
+                    return;
+                }
+            }
         }
     }
 
