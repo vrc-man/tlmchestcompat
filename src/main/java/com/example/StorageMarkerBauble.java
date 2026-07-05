@@ -2,6 +2,7 @@ package com.example;
 
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.example.SlotLockHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -48,7 +49,9 @@ public class StorageMarkerBauble implements IMaidBauble {
         Set<String> filter = readFilter(tag);
 
         // 1. Deposit: maid → container
+        boolean[] locks = SlotLockHelper.getLocks(maid);
         for (int i = 0; i < maidInv.getSlots(); i++) {
+            if (i < locks.length && locks[i]) continue;
             var stack = maidInv.getStackInSlot(i);
             if (stack.isEmpty()) continue;
             if (isSkippable(stack)) continue;

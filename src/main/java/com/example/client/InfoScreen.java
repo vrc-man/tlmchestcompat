@@ -21,20 +21,37 @@ public class InfoScreen extends Screen {
 
     @Override
     protected void init() {
-        addRenderableWidget(Button.builder(
-            Component.literal("\u00A77[HUD \u8BBE\u7F6E]"),
-            b -> this.minecraft.setScreen(new HudConfigScreen()))
-            .bounds(width / 2 - 88, height / 2 + 115, 80, 16).build());
+        int bx = width / 2 - 112, by = height / 2 + 115;
 
-        addRenderableWidget(Button.builder(
-            Component.literal("\u00A7e[\u590D\u5236UUID]"),
-            b -> {
-                if (data != null) {
-                    this.minecraft.keyboardHandler.setClipboard(data.uuid);
-                    this.minecraft.player.sendSystemMessage(
-                        Component.literal("\u00A7aUUID\u5DF2\u590D\u5236\u5230\u526A\u8D34\u677F"));
+        addRenderableWidget(Button.builder(Component.literal("\u00A77[HUD]"), b ->
+            this.minecraft.setScreen(new HudConfigScreen())).bounds(bx, by, 72, 16).build());
+
+        addRenderableWidget(Button.builder(Component.literal("\u00A7e[UUID]"), b -> {
+            if (data != null) {
+                this.minecraft.keyboardHandler.setClipboard(data.uuid);
+                this.minecraft.player.sendSystemMessage(
+                    Component.literal("\u00A7aUUID\u5DF2\u590D\u5236\u5230\u526A\u8D34\u677F"));
+            }
+        }).bounds(bx + 76, by, 72, 16).build());
+
+        addRenderableWidget(Button.builder(Component.literal("\u00A7c[\u69FD\u4F4D]"), b -> {
+            // Read locks from cached maid data
+            var cached = com.example.client.ClientProxy.cachedMaidData;
+            var locks = new boolean[com.example.SlotLockHelper.SLOT_COUNT];
+            if (ClientProxy.cachedMaidData != null) {
+                // Try to read from the client-side entity
+                var mc = net.minecraft.client.Minecraft.getInstance();
+                if (mc.level != null) {
+                    for (var e : mc.level.entitiesForRendering()) {
+                        if (e.getUUID().toString().equals(cached.uuid) && e instanceof net.minecraft.world.entity.LivingEntity living) {
+                            locks = com.example.SlotLockHelper.getLocks(living);
+                            break;
+                        }
+                    }
                 }
-            }).bounds(width / 2 + 8, height / 2 + 115, 80, 16).build());
+            }
+            this.minecraft.setScreen(new SlotLockScreen(locks));
+        }).bounds(bx + 152, by, 72, 16).build());
     }
 
     @Override

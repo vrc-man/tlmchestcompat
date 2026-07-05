@@ -2,6 +2,7 @@ package com.example;
 
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.example.SlotLockHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
@@ -26,7 +27,7 @@ public class BackpackBauble implements IMaidBauble {
         backpack.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(backpackInv -> {
             ItemStackHandler maidInv = maid.getMaidInv();
             tryFeed(maid, maidInv, backpackInv);
-            tryStore(maidInv, backpackInv);
+            tryStore(maidInv, backpackInv, maid);
             tryRestock(maidInv, backpackInv);
         });
     }
@@ -53,13 +54,19 @@ public class BackpackBauble implements IMaidBauble {
         }
     }
 
-    private void tryStore(ItemStackHandler maidInv, IItemHandler backpackInv) {
+    private void tryStore(ItemStackHandler maidInv, IItemHandler backpackInv, EntityMaid maid) {
+        autoStore(maidInv, backpackInv, maid);
+    }
+
+    private void autoStore(ItemStackHandler maidInv, IItemHandler targetInv, EntityMaid maid) {
+        boolean[] locks = maid == null ? new boolean[0] : SlotLockHelper.getLocks(maid);
         for (int i = 0; i < maidInv.getSlots(); i++) {
+            if (i < locks.length && locks[i]) continue; // skip locked slot
             ItemStack stack = maidInv.getStackInSlot(i);
             if (stack.isEmpty()) continue;
             if (isSkippable(stack)) continue;
 
-            ItemStack remaining = ItemHandlerHelper.insertItemStacked(backpackInv, stack, false);
+            ItemStack remaining = ItemHandlerHelper.insertItemStacked(targetInv, stack, false);
             maidInv.setStackInSlot(i, remaining);
             if (remaining.isEmpty()) break;
         }
