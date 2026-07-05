@@ -1,39 +1,53 @@
 # TLM Chest Compat
 
-A Forge mod for Minecraft 1.20.1 that adds Sophisticated Backpacks/Storage integration to [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid).
+A Forge mod for Minecraft 1.20.1 that extends [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid) with inventory management, baubles, and Sophisticated Backpacks integration.
 
 ## Features
 
-### 1. Wireless IO Chest Type
-Registers Sophisticated Backpacks and Core blocks as valid chest types for TLM's Wireless IO system. Place a Sophisticated Backpack/Chest block in the world and bind it with the Wireless IO binding item — maids can transfer items to/from it.
+### Items (Creative Tab: TLM Chest Compat)
 
-### 2. Backpack Storage Core
-A bauble item for maids that provides automatic inventory management:
+| Item | Recipe | Function |
+|---|---|---|
+| **Info Scanner** | Compass + Sugar | Right-click maid: GUI info panel. Sneak+click: +9000 all stats. Air click: HUD settings. |
+| **Backpack Storage Core** | Ender Pearl + Blaze Rod (diagonal) | Auto-store items into Sophisticated Backpack in maid's Curios back slot. Auto-feed when hungry. |
+| **Kill-Proof Charm** | Immortal Charm + Nether Star | Immune to ALL damage including `/kill`. Uses TLM API `onDeath()`. |
+| **Effect Immune Charm** | Milk + Fermented Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness every tick. |
+| **Storage Marker** | Ender Chest + Ender Pearl | Right-click any container to bind. Maid auto-deposits items. Backpack has priority. |
 
-- **Auto-store**: Items in the maid's inventory are automatically transferred into a Sophisticated Backpack worn in the maid's Curios **back** slot.
-- **Auto-feed**: When the maid's hunger drops below 15 and no food is in her inventory, food is extracted from the backpack into her inventory so her AI can eat it.
+### Commands (OP level 2)
+
+- `/maidadd <attr> <value> [uuid]` — Add attribute to nearest/specified maid
+- `/maidaddslot <slotType> [uuid]` — Add permanent Curios slot (Tab-completion for all registered slot types)
+
+### HUD Overlay
+
+Configurable overlay showing nearest maid's HP bar, armor, eat count, TPS, FPS.
+
+Right-click air with Info Scanner to open HUD settings:
+- Toggle ON/OFF
+- 5 position presets
+- Scale (0.5x ~ 2.0x)
+- Opacity (0% ~ 100%)
+- Update interval (3s ~ 600s)
+- X/Y offset (-200 ~ 200)
+
+### Maid Priority Chain
+
+```
+Backpack Storage Core + Backpack in back slot (highest priority)
+    ↓ (backpack full / no backpack)
+Storage Marker bound container
+    ↓ (container full / no binding)
+Items stay in maid inventory
+    ↓ (inventory full → TLM handles it)
+```
 
 ## Dependencies
 
 - [Minecraft Forge](https://files.minecraftforge.net/) 47.3.33+
 - [Touhou Little Maid](https://www.curseforge.com/minecraft/mc-mods/touhou-little-maid) 1.5.3+
 - [Curios API](https://www.curseforge.com/minecraft/mc-mods/curios) 5.14.1+
-- [Sophisticated Backpacks](https://www.curseforge.com/minecraft/mc-mods/sophisticated-backpacks) (optional, for backpack storage features)
-- [Sophisticated Core](https://www.curseforge.com/minecraft/mc-mods/sophisticated-core) (optional)
-
-## Usage
-
-### Wireless IO Binding
-1. Place a Sophisticated Backpack/Chest block in the world.
-2. Use TLM's Wireless IO binding item on it.
-3. Give the maid a Wireless IO bauble.
-4. Set the maid to collect/store mode.
-
-### Backpack Storage Core
-1. Give the item: `/give @p tlmchestcompat:backpack_bauble`
-2. Put a **Sophisticated Backpack** in the maid's Curios **back** slot.
-3. Put the **Backpack Storage Core** in the maid's bauble slot.
-4. The maid will automatically store items and feed from the backpack.
+- [Sophisticated Backpacks](https://www.curseforge.com/minecraft/mc-mods/sophisticated-backpacks) (optional)
 
 ## Building
 
@@ -45,7 +59,7 @@ $env:Path = "C:\Program Files\Java\jdk-17\bin;$env:Path"
 .\gradlew.bat build
 ```
 
-Output jar: `build/libs/tlmchestcompat-1.0.0.jar`
+Output: `build/libs/tlmchestcompat-1.0.0.jar`
 
 ## Credits
 
