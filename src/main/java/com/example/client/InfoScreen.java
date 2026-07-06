@@ -35,22 +35,19 @@ public class InfoScreen extends Screen {
         }).bounds(bx + 76, by, 72, 16).build());
 
         addRenderableWidget(Button.builder(Component.literal("\u00A7c[\u69FD\u4F4D]"), b -> {
-            // Read locks from cached maid data
-            var cached = com.example.client.ClientProxy.cachedMaidData;
             var locks = new boolean[com.example.SlotLockHelper.SLOT_COUNT];
-            if (ClientProxy.cachedMaidData != null) {
-                // Try to read from the client-side entity
+            if (data != null) {
                 var mc = net.minecraft.client.Minecraft.getInstance();
                 if (mc.level != null) {
                     for (var e : mc.level.entitiesForRendering()) {
-                        if (e.getUUID().toString().equals(cached.uuid) && e instanceof net.minecraft.world.entity.LivingEntity living) {
+                        if (e.getUUID().toString().equals(data.uuid) && e instanceof net.minecraft.world.entity.LivingEntity living) {
                             locks = com.example.SlotLockHelper.getLocks(living);
                             break;
                         }
                     }
                 }
+                this.minecraft.setScreen(new SlotLockScreen(locks, data.uuid));
             }
-            this.minecraft.setScreen(new SlotLockScreen(locks));
         }).bounds(bx + 152, by, 72, 16).build());
     }
 

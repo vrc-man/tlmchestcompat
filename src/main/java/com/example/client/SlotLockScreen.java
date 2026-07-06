@@ -13,11 +13,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class SlotLockScreen extends Screen {
     private static final int COLS = 6, ROWS = 6;
     private final boolean[] locks;
+    private final String maidUuid;
     private int panelX, panelY;
 
-    public SlotLockScreen(boolean[] locks) {
+    public SlotLockScreen(boolean[] locks, String maidUuid) {
         super(Component.literal(""));
         this.locks = locks;
+        this.maidUuid = maidUuid;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class SlotLockScreen extends Screen {
         addRenderableWidget(Button.builder(
             Component.literal("\u00A7r\u4FDD\u5B58"),
             b -> {
-                ModNetwork.CHANNEL.sendToServer(new SlotLockPacket(locks));
+                ModNetwork.CHANNEL.sendToServer(new SlotLockPacket(locks, maidUuid));
                 onClose();
             }).bounds(cx - 62, panelY + ROWS * 18 + 34, 58, 18).build());
 
@@ -56,14 +58,11 @@ public class SlotLockScreen extends Screen {
 
         int pw = COLS * 18 + 28, ph = ROWS * 18 + 66;
 
-        // Vanilla-style panel background
         g.fill(panelX, panelY, panelX + pw, panelY + ph, 0xFF555555);
         g.fill(panelX + 1, panelY + 1, panelX + pw - 1, panelY + ph - 1, 0xFFC6C6C6);
 
-        // Title
         drawC(g, "\u00A70\u69FD\u4F4D\u9501\u5B9A", panelX + pw / 2, panelY + 8, 0xFF404040);
 
-        // Draw slot backgrounds
         int idx = 0;
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
@@ -102,7 +101,6 @@ public class SlotLockScreen extends Screen {
 
         @Override
         public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
-            // Custom rendering handled in the parent screen's render
         }
     }
 }
