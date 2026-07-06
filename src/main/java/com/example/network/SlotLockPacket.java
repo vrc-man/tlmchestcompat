@@ -39,8 +39,10 @@ public class SlotLockPacket {
             try {
                 var u = UUID.fromString(uuid);
                 for (var e : player.serverLevel().getEntities().getAll()) {
-                    if (e.getUUID().equals(u) && e instanceof net.minecraft.world.entity.LivingEntity living) {
-                        SlotLockHelper.setLocks(living, locks);
+                    if (e.getUUID().equals(u) && e instanceof net.minecraft.world.entity.TamableAnimal maid) {
+                        if (player.isCreative() || maid.getOwner() == player) {
+                            SlotLockHelper.setLocks(maid, locks);
+                        }
                         return;
                     }
                 }
