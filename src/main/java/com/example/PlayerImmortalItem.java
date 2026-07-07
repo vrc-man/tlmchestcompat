@@ -6,6 +6,8 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class PlayerImmortalItem extends BaubleItem {
     public PlayerImmortalItem() {
@@ -20,8 +22,12 @@ public class PlayerImmortalItem extends BaubleItem {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
         if (!level.isClientSide) return InteractionResultHolder.success(stack);
+        openScreen(stack);
+        return InteractionResultHolder.success(stack);
+    }
 
-        // Client-side: open config screen
+    @OnlyIn(Dist.CLIENT)
+    private void openScreen(ItemStack stack) {
         var tag = stack.getOrCreateTag();
         net.minecraft.client.Minecraft.getInstance().setScreen(
             new com.example.client.PlayerImmortalScreen(
@@ -29,6 +35,5 @@ public class PlayerImmortalItem extends BaubleItem {
                 tag.getBoolean("flightEnabled"),
                 tag.getBoolean("slowFalling"),
                 tag.getBoolean("nightVision")));
-        return InteractionResultHolder.success(stack);
     }
 }

@@ -38,7 +38,7 @@ public class PlayerImmortalScreen extends Screen {
 
         addRenderableWidget(Button.builder(
             Component.literal("\u00A77\u901F\u5EA6: \u00A7f" + String.format("%.1f", flightSpeed) + "x"),
-            b -> { flightSpeed = flightSpeed >= 5.0 ? 0.5 : flightSpeed + 0.5; b.setMessage(Component.literal("\u00A77\u901F\u5EA6: \u00A7f" + String.format("%.1f", flightSpeed) + "x")); })
+            b -> {                 flightSpeed = flightSpeed >= 10.0 ? 0.5 : flightSpeed + 0.5; b.setMessage(Component.literal("\u00A77\u901F\u5EA6: \u00A7f" + String.format("%.1f", flightSpeed) + "x")); })
             .bounds(px + 10, py + 48, 120, 18).build());
 
         addRenderableWidget(Button.builder(
