@@ -10,7 +10,7 @@ All items are available in the creative tab **TLM Chest Compat**.
 |---|---|---|---|
 | **Info Scanner** | Compass + Sugar | View/set maid stats, configure HUD and slot locks | Right-click maid: GUI panel. Sneak+right-click maid (creative): +9000 all stats. Right-click air: HUD config. |
 | **Backpack Storage Core** | Ender Pearl + Blaze Rod (diagonal) | Auto-store items & auto-feed from backpack | Put in maid's bauble slot. Requires Sophisticated Backpack in maid's Curios **back** slot. |
-| **Kill-Proof Charm** (for maids) | Immortal Charm (`vefc:maid_immortal_charm`) + Nether Star | Maid immune to ALL damage including `/kill` | Put in maid's bauble slot. |
+| **Kill-Proof Charm** (for maids) | Immortal Charm + Nether Star | Maid immune to ALL damage including `/kill` | Put in maid's bauble slot. Obsoleted by Maid Reflect Bauble. |
 | **Effect Immune Charm** | Milk Bucket + Fermented Spider Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness | Put in maid's bauble slot. |
 | **Storage Marker** | Ender Chest + Ender Pearl | Bind any container for maid to auto-deposit | Sneak+right-click container to bind. Right-click air to open filter GUI. Put in maid's bauble slot. |
 | **Player Immortal Charm** | Creative / Command only | Player immune to ALL damage including `/kill` | Hold in hand or place in Curios charm/belt/back slot. Right-click air: config screen (flight, night vision, slow falling, reflect). |
@@ -52,16 +52,26 @@ All items are available in the creative tab **TLM Chest Compat**.
 - **Backpack priority**: If Backpack Storage Core is also equipped, only activates when the backpack is full.
 
 ### Player Immortal Charm
-- **LivingHurtEvent**: Cancels all damage to the player.
-- Works in Curios charm, belt, or back slot, or held in main/off hand.
-- **Right-click air**: Opens config screen with flight toggle, speed (0.5x-10x), slow falling, night vision, and reflect multiplier (0-10x).
+- **LivingHurtEvent**: Cancels all damage to the player, including `/kill`.
+- Works in Curios charm, belt, or back slot, OR held in main/off hand, OR anywhere in inventory.
+- **Constant buffs**: Applied every tick — Saturation IV, Regeneration II, Absorption IV, Fire Resistance, Water Breathing, Resistance IV.
+- **Debuff cleanse**: Every tick removes 11 negative effects (poison, wither, slowness, mining fatigue, blindness, hunger, weakness, levitation, bad luck, bad omen, darkness).
+- **Night vision** (toggleable via config screen).
+- **100% knockback resistance** forced every tick.
+- **Right-click air**: Opens config screen with:
+  - Flight ON/OFF toggle
+  - Flight speed (0.5x ~ 10x)
+  - Slow falling ON/OFF toggle
+  - Night vision ON/OFF toggle
+  - Reflect damage multiplier (0x ~ 10x, step 0.5). When > 0, reflects incoming damage × multiplier as magic damage + sets attacker on fire (multiplier × 2 seconds).
 - Creative / Command only — no recipe.
 
 ### Maid Reflect Bauble
 - **Full immunity**: Cancels all damage including `/kill` via `LivingHurtEvent`.
 - **Effect immunity**: Every tick removes 11 negative effects (poison, wither, slowness, mining fatigue, blindness, hunger, weakness, levitation, bad luck, bad omen, darkness).
-- **Knockback resistance**: 100% knockback resistance forced every tick.
-- **Configurable reflect**: Right-click air opens config screen. Reflects incoming damage back to the attacker at 0.5x-10x multiplier (default 1x). Also sets attacker on fire (multiplier × 2 seconds).
+- **100% knockback resistance** forced every tick.
+- **Configurable reflect**: Right-click air opens config screen. Reflects incoming damage back to the attacker at 0x-10x multiplier (default 1x, step 0.5). Also sets attacker on fire (multiplier × 2 seconds).
+- **Full superset of Kill-Proof Charm** — no need to equip both.
 - Put in maid's bauble slot. Creative / Command only — no recipe.
 
 ### SopChestExtension (Wireless IO)
@@ -112,6 +122,24 @@ The mod listens to `MaidRequestItemEvent` — when the maid's AI needs items (se
 2. The bound container (if Storage Marker is equipped)
 
 Items are pulled on demand — no polling, no waste.
+
+## KubeJS Server Scripts
+
+The mod includes companion KubeJS scripts (place in `kubejs/server_scripts/`):
+
+### `maid_food_stats.js`
+- When a maid eats food, randomly increases 1 of 11 growth attributes (HP, Armor, Toughness, Damage, Speed, Reach, Dig, Resist, Explosion, Thorns, Crit, Regen).
+- Restores XP if the maid's owner is online.
+- If the maid has no owner, stats are saved to the maid's persistent data for later assignment when claimed.
+
+### `maid_immortal.js`
+- On maid spawn, checks if the maid's name contains "灵" (Ling). If so, adds permanent immunity buffs (Saturation IV, Regeneration IV, Absorption IV, Resistance IV) that reapply every 5 seconds.
+- When such a maid takes damage, she regains full health and heals nearby players within 10 blocks.
+
+### `maid_curios_slots.js`
+- `/maidcurios reload` — Reloads slot config from a JSON file (`kubejs/assets/curios/`).
+- `/maidcurios add <slotType> [count]` — Adds permanent slots to the nearest maid.
+- **Sneak + right-click** a maid with any item to cycle through Curios slot types and auto-add one slot.
 
 ## Dependencies
 
