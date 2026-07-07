@@ -39,6 +39,10 @@ public class ModItems {
         "player_immortal_bauble", PlayerImmortalItem::new
     );
 
+    public static final RegistryObject<Item> MAID_REFLECT_BAUBLE = ITEMS.register(
+        "maid_reflect_bauble", MaidReflectItem::new
+    );
+
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

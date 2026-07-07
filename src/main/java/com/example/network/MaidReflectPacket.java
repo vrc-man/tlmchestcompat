@@ -1,37 +1,25 @@
 package com.example.network;
 
+import com.example.ModItems;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class PlayerImmortalConfigPacket {
-    public final double flightSpeed;
-    public final boolean flightEnabled;
-    public final boolean slowFalling;
-    public final boolean nightVision;
+public class MaidReflectPacket {
     public final double reflectMult;
 
-    public PlayerImmortalConfigPacket(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, double reflectMult) {
-        this.flightSpeed = flightSpeed;
-        this.flightEnabled = flightEnabled;
-        this.slowFalling = slowFalling;
-        this.nightVision = nightVision;
+    public MaidReflectPacket(double reflectMult) {
         this.reflectMult = reflectMult;
     }
 
     public void encode(FriendlyByteBuf buf) {
-        buf.writeDouble(flightSpeed);
-        buf.writeBoolean(flightEnabled);
-        buf.writeBoolean(slowFalling);
-        buf.writeBoolean(nightVision);
         buf.writeDouble(reflectMult);
     }
 
-    public static PlayerImmortalConfigPacket decode(FriendlyByteBuf buf) {
-        return new PlayerImmortalConfigPacket(
-            buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble());
+    public static MaidReflectPacket decode(FriendlyByteBuf buf) {
+        return new MaidReflectPacket(buf.readDouble());
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -39,22 +27,16 @@ public class PlayerImmortalConfigPacket {
             var player = ctx.get().getSender();
             if (player == null) return;
 
-            // Try mainhand / offhand first
             var stack = player.getMainHandItem();
-            if (stack.isEmpty() || !(stack.getItem() instanceof com.example.PlayerImmortalItem)) {
+            if (stack.isEmpty() || !(stack.getItem() instanceof com.example.MaidReflectItem)) {
                 stack = player.getOffhandItem();
-                if (stack.isEmpty() || !(stack.getItem() instanceof com.example.PlayerImmortalItem)) {
-                    // Try Curios slots
+                if (stack.isEmpty() || !(stack.getItem() instanceof com.example.MaidReflectItem)) {
                     stack = findInCurios(player);
                 }
             }
-            if (stack.isEmpty() || !(stack.getItem() instanceof com.example.PlayerImmortalItem)) return;
+            if (stack.isEmpty() || !(stack.getItem() instanceof com.example.MaidReflectItem)) return;
 
             var tag = stack.getOrCreateTag();
-            tag.putDouble("flightSpeed", flightSpeed);
-            tag.putBoolean("flightEnabled", flightEnabled);
-            tag.putBoolean("slowFalling", slowFalling);
-            tag.putBoolean("nightVision", nightVision);
             tag.putDouble("reflectMult", reflectMult);
         });
         ctx.get().setPacketHandled(true);
@@ -73,7 +55,7 @@ public class PlayerImmortalConfigPacket {
                             var getStk = stacks.getClass().getMethod("getStackInSlot", int.class);
                             for (int i = 0; i < slots; i++) {
                                 var s = (ItemStack) getStk.invoke(stacks, i);
-                                if (s.getItem() instanceof com.example.PlayerImmortalItem) return s;
+                                if (s.getItem() instanceof com.example.MaidReflectItem) return s;
                             }
                         }
                     }

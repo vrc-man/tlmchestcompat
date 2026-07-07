@@ -62,8 +62,23 @@ public class TlmChestCompat {
         if (entity instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
             var bauble = maid.getMaidBauble();
             for (int i = 0; i < bauble.getSlots(); i++) {
-                if (bauble.getStackInSlot(i).getItem() == ModItems.TRUE_IMMORTAL_BAUBLE.get()) {
+                var item = bauble.getStackInSlot(i).getItem();
+                if (item == ModItems.TRUE_IMMORTAL_BAUBLE.get()) {
                     event.setCanceled(true);
+                    return;
+                }
+                if (item == ModItems.MAID_REFLECT_BAUBLE.get()) {
+                    event.setCanceled(true);
+                    var tag = bauble.getStackInSlot(i).getTag();
+                    double reflectMult = (tag != null && tag.contains("reflectMult")) ? tag.getDouble("reflectMult") : 1.0;
+                    if (reflectMult > 0) {
+                        var src = event.getSource();
+                        var attacker = src.getEntity();
+                        if (attacker != null && attacker != maid) {
+                            attacker.hurt(attacker.damageSources().magic(), event.getAmount() * (float) reflectMult);
+                            attacker.setSecondsOnFire((int) Math.round(reflectMult * 2));
+                        }
+                    }
                     return;
                 }
             }
@@ -76,31 +91,18 @@ public class TlmChestCompat {
 
                 // Reflection damage
                 var tag = getPlayerBaubleTag(player);
-                if (tag != null && tag.contains("reflectMult") && tag.getDouble("reflectMult") > 0) {
+                double reflectMult = (tag != null && tag.contains("reflectMult")) ? tag.getDouble("reflectMult") : 1.0;
+                if (reflectMult > 0) {
                     var src = event.getSource();
                     var attacker = src.getEntity();
                     if (attacker != null && attacker != player) {
-                        double mult = tag.getDouble("reflectMult");
                         float incoming = event.getAmount();
+                        float dmg = incoming * (float) reflectMult;
 
-                        // Explosion damage
-                        attacker.hurt(attacker.damageSources().explosion(null, attacker), incoming * (float) mult * 0.3f);
-                        // Fire damage
-                        attacker.hurt(attacker.damageSources().inFire(), incoming * (float) mult * 0.2f);
-                        attacker.setSecondsOnFire(3);
-                        // Magic damage
-                        attacker.hurt(attacker.damageSources().magic(), incoming * (float) mult * 0.3f);
-                        // Suffocation/thorns
-                        attacker.hurt(attacker.damageSources().thorns(player), incoming * (float) mult * 0.2f);
-
-                        // Knockback
-                        var dx = attacker.getX() - player.getX();
-                        var dz = attacker.getZ() - player.getZ();
-                        double dist = Math.sqrt(dx * dx + dz * dz);
-                        if (dist > 0.01) {
-                            attacker.push(dx / dist * mult, 0.5 * mult, dz / dist * mult);
-                            attacker.hurtMarked = true;
-                        }
+                        // Apply multiple damage types in sequence
+                        attacker.hurt(attacker.damageSources().magic(), dmg * 0.5f);           // magic
+                        attacker.hurt(attacker.damageSources().explosion(null, attacker), dmg * 0.3f);  // explosion
+                        attacker.setSecondsOnFire((int) Math.round(reflectMult * 2));         // fire duration
                     }
                 }
             }
@@ -135,6 +137,12 @@ public class TlmChestCompat {
         if (tag.getBoolean("nightVision")) {
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.NIGHT_VISION, 300, 0, false, false));
+        }
+
+        // 2b. Knockback resistance (always on, forced every tick)
+        var kbAttr = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+        if (kbAttr != null) {
+            kbAttr.setBaseValue(1.0);
         }
 
         // 3. Remove all negative effects

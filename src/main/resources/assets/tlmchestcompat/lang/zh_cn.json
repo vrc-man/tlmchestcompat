@@ -5,5 +5,6 @@
   "item.tlmchestcompat.effect_immune_bauble": "状态免疫护符",
   "item.tlmchestcompat.storage_marker": "Storage Marker",
   "item.tlmchestcompat.player_immortal_bauble": "Player Immortal Charm",
-  "item.tlmchestcompat.player_immortal_bauble.tooltip": "玩家专用，免疫一切伤害包括/kill"
+  "item.tlmchestcompat.player_immortal_bauble.tooltip": "玩家专用，免疫一切伤害包括/kill",
+  "item.tlmchestcompat.maid_reflect_bauble": "女仆反伤护符"
 }

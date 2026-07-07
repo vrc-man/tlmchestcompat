@@ -31,6 +31,8 @@ public class ModNetwork {
             SlotLockPacket::encode, SlotLockPacket::decode, SlotLockPacket::handle);
         CHANNEL.registerMessage(id++, PlayerImmortalConfigPacket.class,
             PlayerImmortalConfigPacket::encode, PlayerImmortalConfigPacket::decode, PlayerImmortalConfigPacket::handle);
+        CHANNEL.registerMessage(id++, com.example.network.MaidReflectPacket.class,
+            com.example.network.MaidReflectPacket::encode, com.example.network.MaidReflectPacket::decode, com.example.network.MaidReflectPacket::handle);
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {

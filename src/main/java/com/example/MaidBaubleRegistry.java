@@ -12,5 +12,6 @@ public class MaidBaubleRegistry implements ILittleMaid {
         manager.bind(ModItems.TRUE_IMMORTAL_BAUBLE.get(), new TrueImmortalBauble());
         manager.bind(ModItems.EFFECT_IMMUNE_BAUBLE.get(), new EffectImmuneBauble());
         manager.bind(ModItems.STORAGE_MARKER.get(), new StorageMarkerBauble());
+        manager.bind(ModItems.MAID_REFLECT_BAUBLE.get(), new MaidReflectBauble());
     }
 }
