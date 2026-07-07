@@ -123,8 +123,9 @@ $env:Path = "C:\Program Files\Java\jdk-17\bin;$env:Path"
 
 Output: `build/libs/tlmchestcompat-1.0.0.jar`
 
-## Credits
+## Credits & References
 
-- [TartaricAcid](https://github.com/TartaricAcid) for Touhou Little Maid
-- [TheIllusiveC4](https://github.com/TheIllusiveC4) for Curios API
-- [P3pp3rF1y](https://github.com/P3pp3rF1y) for Sophisticated Backpacks/Core
+- [TartaricAcid](https://github.com/TartaricAcid) for Touhou Little Maid — `@LittleMaidExtension`, `IMaidBauble`, `MaidRequestItemEvent`, Wireless IO slot locking
+- [TheIllusiveC4](https://github.com/TheIllusiveC4) for Curios API — `ICurioItem`, slot types, player curios integration
+- [P3pp3rF1y](https://github.com/P3pp3rF1y) for Sophisticated Backpacks/Core — backpack inventory capability
+- [yimeng261](https://github.com/yimeng261) for Touhou Little Maid Spell — reference for `@LittleMaidExtension` registration pattern and bauble structure
