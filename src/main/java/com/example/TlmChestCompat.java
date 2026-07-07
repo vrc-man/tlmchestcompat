@@ -171,6 +171,11 @@ public class TlmChestCompat {
         if (hand.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && hand.hasTag()) return hand.getTag();
         var off = player.getOffhandItem();
         if (off.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && off.hasTag()) return off.getTag();
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            var s = inv.getItem(i);
+            if (s.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && s.hasTag()) return s.getTag();
+        }
         return null;
     }
 
@@ -197,6 +202,11 @@ public class TlmChestCompat {
 
         if (player.getMainHandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
         if (player.getOffhandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+        // Check main inventory (36 slots)
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (inv.getItem(i).getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+        }
         return false;
     }
 
