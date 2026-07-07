@@ -40,7 +40,7 @@ public class SlotLockPacket {
                 var u = UUID.fromString(uuid);
                 for (var e : player.serverLevel().getEntities().getAll()) {
                     if (e.getUUID().equals(u) && e instanceof net.minecraft.world.entity.TamableAnimal maid) {
-                        if (player.isCreative() || maid.getOwner() == player) {
+                        if (player.isCreative() || player.hasPermissions(2) || maid.getOwner() == player) {
                             SlotLockHelper.setLocks(maid, locks);
                         }
                         return;

@@ -40,9 +40,25 @@ public class ModCommands {
         Map.entry("regen", "attrRegenPct")
     );
 
+    private static java.util.Set<String> getAllSlots() {
+        var slots = new java.util.HashSet<String>();
+        java.util.Collections.addAll(slots, "head","necklace","back","body","bracelet","hands","ring","belt",
+            "charm","feet","curio","accessory","an_focus","rings","scroll","spellstone","talisman","tarot","waist",
+            "maid_red","maid_blue","maid_yellow");
+        // Try to include dynamically registered slots from Curios API
+        try {
+            var apiSlots = CuriosApi.getPlayerSlots(true);
+            if (apiSlots != null && !apiSlots.isEmpty()) {
+                slots.clear();
+                slots.addAll(apiSlots.keySet());
+            }
+        } catch (Exception ignored) {}
+        return slots;
+    }
+
     private static final SuggestionProvider<CommandSourceStack> SLOT_SUGGESTIONS =
         (ctx, builder) -> {
-            for (var slot : CuriosApi.getSlots(true).keySet()) {
+            for (var slot : getAllSlots()) {
                 builder.suggest(slot);
             }
             return builder.buildFuture();
@@ -127,9 +143,9 @@ public class ModCommands {
         ServerPlayer player;
         try { player = src.getPlayerOrException(); } catch (Exception e) { return 0; }
 
-        if (!CuriosApi.getSlots(true).containsKey(slotType)) {
+        if (!getAllSlots().contains(slotType)) {
             player.sendSystemMessage(Component.literal("\u00A7c\u69FD\u4F4D\u7C7B\u578B\u4E0D\u5B58\u5728: " + slotType));
-            var available = String.join(", ", CuriosApi.getSlots(true).keySet());
+            var available = String.join(", ", getAllSlots());
             player.sendSystemMessage(Component.literal("\u00A77\u53EF\u7528\u69FD\u4F4D: " + available));
             return 0;
         }
