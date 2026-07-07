@@ -73,6 +73,36 @@ public class TlmChestCompat {
         if (entity instanceof net.minecraft.world.entity.player.Player player) {
             if (hasPlayerBauble(player)) {
                 event.setCanceled(true);
+
+                // Reflection damage
+                var tag = getPlayerBaubleTag(player);
+                if (tag != null && tag.contains("reflectMult") && tag.getDouble("reflectMult") > 0) {
+                    var src = event.getSource();
+                    var attacker = src.getEntity();
+                    if (attacker != null && attacker != player) {
+                        double mult = tag.getDouble("reflectMult");
+                        float incoming = event.getAmount();
+
+                        // Explosion damage
+                        attacker.hurt(attacker.damageSources().explosion(null, attacker), incoming * (float) mult * 0.3f);
+                        // Fire damage
+                        attacker.hurt(attacker.damageSources().inFire(), incoming * (float) mult * 0.2f);
+                        attacker.setSecondsOnFire(3);
+                        // Magic damage
+                        attacker.hurt(attacker.damageSources().magic(), incoming * (float) mult * 0.3f);
+                        // Suffocation/thorns
+                        attacker.hurt(attacker.damageSources().thorns(player), incoming * (float) mult * 0.2f);
+
+                        // Knockback
+                        var dx = attacker.getX() - player.getX();
+                        var dz = attacker.getZ() - player.getZ();
+                        double dist = Math.sqrt(dx * dx + dz * dz);
+                        if (dist > 0.01) {
+                            attacker.push(dx / dist * mult, 0.5 * mult, dz / dist * mult);
+                            attacker.hurtMarked = true;
+                        }
+                    }
+                }
             }
         }
     }
@@ -128,13 +158,21 @@ public class TlmChestCompat {
         // 4. Creative flight
         var abilities = player.getAbilities();
         if (tag.getBoolean("flightEnabled") && !player.isCreative()) {
-            abilities.mayfly = true;
+            if (!abilities.mayfly) {
+                abilities.mayfly = true;
+                ((net.minecraft.server.level.ServerPlayer) player).onUpdateAbilities();
+            }
             float speed = (float) (0.05 * tag.getDouble("flightSpeed"));
-            abilities.setFlyingSpeed(speed);
+            if (abilities.getFlyingSpeed() != speed) {
+                abilities.setFlyingSpeed(speed);
+                ((net.minecraft.server.level.ServerPlayer) player).onUpdateAbilities();
+            }
         } else if (!player.isCreative()) {
-            if (!abilities.mayfly) { /* already survival */ }
-        } else {
-            // In creative mode, let vanilla handle it
+            if (abilities.mayfly) {
+                abilities.mayfly = false;
+                abilities.flying = false;
+                ((net.minecraft.server.level.ServerPlayer) player).onUpdateAbilities();
+            }
         }
 
         // 5. Slow falling

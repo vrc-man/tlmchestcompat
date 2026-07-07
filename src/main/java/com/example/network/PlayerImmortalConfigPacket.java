@@ -10,12 +10,14 @@ public class PlayerImmortalConfigPacket {
     public final boolean flightEnabled;
     public final boolean slowFalling;
     public final boolean nightVision;
+    public final double reflectMult;
 
-    public PlayerImmortalConfigPacket(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision) {
+    public PlayerImmortalConfigPacket(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, double reflectMult) {
         this.flightSpeed = flightSpeed;
         this.flightEnabled = flightEnabled;
         this.slowFalling = slowFalling;
         this.nightVision = nightVision;
+        this.reflectMult = reflectMult;
     }
 
     public void encode(FriendlyByteBuf buf) {
@@ -23,11 +25,12 @@ public class PlayerImmortalConfigPacket {
         buf.writeBoolean(flightEnabled);
         buf.writeBoolean(slowFalling);
         buf.writeBoolean(nightVision);
+        buf.writeDouble(reflectMult);
     }
 
     public static PlayerImmortalConfigPacket decode(FriendlyByteBuf buf) {
         return new PlayerImmortalConfigPacket(
-            buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+            buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble());
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -44,6 +47,7 @@ public class PlayerImmortalConfigPacket {
             tag.putBoolean("flightEnabled", flightEnabled);
             tag.putBoolean("slowFalling", slowFalling);
             tag.putBoolean("nightVision", nightVision);
+            tag.putDouble("reflectMult", reflectMult);
         });
         ctx.get().setPacketHandled(true);
     }

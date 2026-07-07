@@ -34,6 +34,7 @@ public class PlayerImmortalItem extends BaubleItem {
                 tag.contains("flightSpeed") ? tag.getDouble("flightSpeed") : 1.0,
                 tag.getBoolean("flightEnabled"),
                 tag.getBoolean("slowFalling"),
-                tag.getBoolean("nightVision")));
+                tag.getBoolean("nightVision"),
+                tag.contains("reflectMult") ? tag.getDouble("reflectMult") : 0));
     }
 }
