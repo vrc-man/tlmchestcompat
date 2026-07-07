@@ -78,21 +78,28 @@ public class TlmChestCompat {
     }
 
     private boolean hasPlayerBauble(net.minecraft.world.entity.player.Player player) {
-        // Check curios slots
         try {
             var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player).resolve();
             if (opt.isPresent()) {
-                var handler = opt.get();
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    if (handler.getStackInSlot(i).getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+                var curios = opt.get().getClass().getMethod("getCurios").invoke(opt.get());
+                if (curios instanceof java.util.Map) {
+                    for (var val : ((java.util.Map<?, ?>) curios).values()) {
+                        if (val != null) {
+                            var stacks = val.getClass().getMethod("getStacks").invoke(val);
+                            int slots = (int) stacks.getClass().getMethod("getSlots").invoke(stacks);
+                            var getStk = stacks.getClass().getMethod("getStackInSlot", int.class);
+                            for (int i = 0; i < slots; i++) {
+                                var s = (net.minecraft.world.item.ItemStack) getStk.invoke(stacks, i);
+                                if (s.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception ignored) {}
 
-        // Check main/off hand
         if (player.getMainHandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
         if (player.getOffhandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
-
         return false;
     }
 
