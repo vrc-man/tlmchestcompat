@@ -11,6 +11,7 @@ A Forge mod for Minecraft 1.20.1 that extends [Touhou Little Maid](https://githu
 | **Kill-Proof Charm** | Immortal Charm + Nether Star | Immune to ALL death including `/kill`. Dual protection: `onDeath()` + tick heartbeat. |
 | **Effect Immune Charm** | Milk + Fermented Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness every tick. |
 | **Storage Marker** | Ender Chest + Ender Pearl | Bind any container (sneak+click). Maid auto-deposits items. Shift+click to set filter. |
+| **Player Immortal Charm** | Creative/Command only | Player is immune to ALL damage including `/kill`. Works in curios slot or hand. |
 
 ## Features
 
