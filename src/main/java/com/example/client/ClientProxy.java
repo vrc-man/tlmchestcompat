@@ -9,9 +9,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class ClientProxy {
     public static volatile float tps = 20.0f;
     public static MaidDataPacket cachedMaidData;
+    public static String trackedMaidUUID; // UUID of maid to track in HUD, null = nearest
 
     public static void onMaidData(MaidDataPacket packet) {
         cachedMaidData = packet;
+        trackedMaidUUID = packet.uuid; // auto-track when scanned
         var mc = Minecraft.getInstance();
         if (mc.screen instanceof InfoScreen) {
             mc.screen.onClose();

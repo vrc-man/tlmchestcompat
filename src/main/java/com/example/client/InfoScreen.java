@@ -49,6 +49,21 @@ public class InfoScreen extends Screen {
                 this.minecraft.setScreen(new SlotLockScreen(locks, data.uuid));
             }
         }).bounds(bx + 152, by, 72, 16).build());
+
+        // Row 2: Track button
+        int by2 = by + 20;
+        boolean isTracking = ClientProxy.trackedMaidUUID != null && data != null && ClientProxy.trackedMaidUUID.equals(data.uuid);
+        addRenderableWidget(Button.builder(
+            Component.literal(isTracking ? "\u00A7a[\u8FFD\u8E2A\u4E2D]" : "\u00A77[\u8FFD\u8E2A]"),
+            b -> {
+                if (ClientProxy.trackedMaidUUID != null && ClientProxy.trackedMaidUUID.equals(data.uuid)) {
+                    ClientProxy.trackedMaidUUID = null; // 取消追踪
+                } else {
+                    ClientProxy.trackedMaidUUID = data.uuid; // 追踪这个女仆
+                }
+                // Refresh screen to update button text
+                this.minecraft.setScreen(new InfoScreen(data));
+            }).bounds(bx + 76, by2, 72, 16).build());
     }
 
     @Override
