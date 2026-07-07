@@ -5,10 +5,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 import java.util.List;
 
-public class BaubleItem extends Item {
+public class BaubleItem extends Item implements ICurioItem {
     private final String[] tooltips;
 
     public BaubleItem(String... tooltips) {
