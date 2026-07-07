@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.network.MaidDataPacket;
 import com.example.network.MarkerConfigPacket;
+import com.example.network.PlayerImmortalConfigPacket;
 import com.example.network.SlotLockPacket;
 import com.example.network.TpsPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +29,8 @@ public class ModNetwork {
             MarkerConfigPacket::encode, MarkerConfigPacket::decode, MarkerConfigPacket::handle);
         CHANNEL.registerMessage(id++, SlotLockPacket.class,
             SlotLockPacket::encode, SlotLockPacket::decode, SlotLockPacket::handle);
+        CHANNEL.registerMessage(id++, PlayerImmortalConfigPacket.class,
+            PlayerImmortalConfigPacket::encode, PlayerImmortalConfigPacket::decode, PlayerImmortalConfigPacket::handle);
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {

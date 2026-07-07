@@ -77,6 +77,103 @@ public class TlmChestCompat {
         }
     }
 
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        var player = event.player;
+        if (player.level().isClientSide) return;
+        if (!hasPlayerBauble(player)) return;
+
+        var tag = getPlayerBaubleTag(player);
+        if (tag == null) return;
+
+        // 1. Apply beneficial effects
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.SATURATION, 200, 1, false, false));
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.REGENERATION, 200, 1, false, false));
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.ABSORPTION, 200, 3, false, false));
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 200, 0, false, false));
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.WATER_BREATHING, 200, 0, false, false));
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 200, 3, false, false));
+
+        // 2. Night vision (toggleable)
+        if (tag.getBoolean("nightVision")) {
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.NIGHT_VISION, 300, 0, false, false));
+        }
+
+        // 3. Remove all negative effects
+        var negativeEffects = new net.minecraft.world.effect.MobEffect[]{
+            net.minecraft.world.effect.MobEffects.POISON,
+            net.minecraft.world.effect.MobEffects.WITHER,
+            net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
+            net.minecraft.world.effect.MobEffects.DIG_SLOWDOWN,
+            net.minecraft.world.effect.MobEffects.BLINDNESS,
+            net.minecraft.world.effect.MobEffects.HUNGER,
+            net.minecraft.world.effect.MobEffects.WEAKNESS,
+            net.minecraft.world.effect.MobEffects.LEVITATION,
+            net.minecraft.world.effect.MobEffects.UNLUCK,
+            net.minecraft.world.effect.MobEffects.BAD_OMEN,
+            net.minecraft.world.effect.MobEffects.DARKNESS
+        };
+        for (var eff : negativeEffects) {
+            player.removeEffect(eff);
+        }
+
+        // 4. Creative flight
+        var abilities = player.getAbilities();
+        if (tag.getBoolean("flightEnabled") && !player.isCreative()) {
+            abilities.mayfly = true;
+            float speed = (float) (0.05 * tag.getDouble("flightSpeed"));
+            abilities.setFlyingSpeed(speed);
+        } else if (!player.isCreative()) {
+            if (!abilities.mayfly) { /* already survival */ }
+        } else {
+            // In creative mode, let vanilla handle it
+        }
+
+        // 5. Slow falling
+        if (tag.getBoolean("slowFalling") && !player.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING)) {
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.SLOW_FALLING, 200, 0, false, false));
+        }
+    }
+
+    private net.minecraft.nbt.CompoundTag getPlayerBaubleTag(net.minecraft.world.entity.player.Player player) {
+        try {
+            var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player).resolve();
+            if (opt.isPresent()) {
+                var curios = opt.get().getClass().getMethod("getCurios").invoke(opt.get());
+                if (curios instanceof java.util.Map) {
+                    for (var val : ((java.util.Map<?, ?>) curios).values()) {
+                        if (val != null) {
+                            var stacks = val.getClass().getMethod("getStacks").invoke(val);
+                            int slots = (int) stacks.getClass().getMethod("getSlots").invoke(stacks);
+                            var getStk = stacks.getClass().getMethod("getStackInSlot", int.class);
+                            for (int i = 0; i < slots; i++) {
+                                var s = (net.minecraft.world.item.ItemStack) getStk.invoke(stacks, i);
+                                if (s.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && s.hasTag()) {
+                                    return s.getTag();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
+        var hand = player.getMainHandItem();
+        if (hand.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && hand.hasTag()) return hand.getTag();
+        var off = player.getOffhandItem();
+        if (off.getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get() && off.hasTag()) return off.getTag();
+        return null;
+    }
+
     private boolean hasPlayerBauble(net.minecraft.world.entity.player.Player player) {
         try {
             var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player).resolve();

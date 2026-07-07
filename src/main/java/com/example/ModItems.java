@@ -36,9 +36,7 @@ public class ModItems {
     );
 
     public static final RegistryObject<Item> PLAYER_IMMORTAL_BAUBLE = ITEMS.register(
-        "player_immortal_bauble", () -> new BaubleItem(
-            "\u00A77\u73A9\u5BB6\u4E13\u7528\uFF0C\u514D\u75AB\u4E00\u5207\u4F24\u5BB3\u5305\u62EC/kill",
-            "\u00A7e\u653E\u5165 Curios \u9970\u54C1\u69FD\u6216\u4E3B\u624B\u4FBF\u53EF\u751F\u6548")
+        "player_immortal_bauble", PlayerImmortalItem::new
     );
 
     public static void register(IEventBus bus) {
