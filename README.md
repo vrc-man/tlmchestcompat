@@ -2,77 +2,107 @@
 
 A Forge mod for Minecraft 1.20.1 that extends [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid) with inventory management, baubles, and Sophisticated Backpacks integration.
 
-## Items (Creative Tab: TLM Chest Compat)
+## Items
 
-| Item | Recipe | Function |
-|---|---|---|
-| **Info Scanner** | Compass + Sugar | Right-click maid: GUI panel with stats. Sneak+click: +9000 all. Right-click air: HUD config. |
-| **Backpack Storage Core** | Ender Pearl + Blaze Rod (diagonal) | Auto-store items into backpack in maid's Curios back slot. Auto-feed when hungry. |
-| **Kill-Proof Charm** | Immortal Charm + Nether Star | Immune to ALL death including `/kill`. Dual protection: `onDeath()` + tick heartbeat. |
-| **Effect Immune Charm** | Milk + Fermented Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness every tick. |
-| **Storage Marker** | Ender Chest + Ender Pearl | Bind any container (sneak+click). Maid auto-deposits items. Shift+click to set filter. |
-| **Player Immortal Charm** | Creative/Command only | Player is immune to ALL damage including `/kill`. Works in curios slot or hand. |
+All items are available in the creative tab **TLM Chest Compat**.
+
+| Item | Recipe | Function | Usage |
+|---|---|---|---|
+| **Info Scanner** | Compass + Sugar | View/set maid stats, configure HUD and slot locks | Right-click maid: GUI panel. Sneak+right-click maid (creative): +9000 all stats. Right-click air: HUD config. |
+| **Backpack Storage Core** | Ender Pearl + Blaze Rod (diagonal) | Auto-store items & auto-feed from backpack | Put in maid's bauble slot. Requires Sophisticated Backpack in maid's Curios **back** slot. |
+| **Kill-Proof Charm** (for maids) | Immortal Charm (`vefc:maid_immortal_charm`) + Nether Star | Maid immune to ALL damage including `/kill` | Put in maid's bauble slot. |
+| **Effect Immune Charm** | Milk Bucket + Fermented Spider Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness | Put in maid's bauble slot. |
+| **Storage Marker** | Ender Chest + Ender Pearl | Bind any container for maid to auto-deposit | Sneak+right-click container to bind. Right-click air to open filter GUI. Put in maid's bauble slot. |
+| **Player Immortal Charm** | Creative / Command only | Player immune to ALL damage including `/kill` | Hold in hand or place in Curios charm/belt/back slot. |
 
 ## Features
 
 ### Info Scanner
-- **Right-click maid** → GUI panel showing UUID, HP, Armor, Toughness, Damage, all growth stats
-- **Sneak+right-click maid** → All growth stats +9000 (applied to entity attributes, not just NBT)
-- **Right-click air** → HUD settings
-- **Copy UUID** button in GUI
-- Chat display with clickable UUID (copies to clipboard)
+- **Right-click maid**: Opens GUI panel showing UUID, HP, Armor, Toughness, Damage, all growth stats, and eat count.
+- **Sneak+right-click maid (creative only)**: Boosts all growth stats by +9000 (applied to entity attributes, not just NBT).
+- **Right-click air**: Opens HUD configuration screen.
+- **Buttons in GUI**: HUD Settings, Copy UUID, Slot Lock config.
+- **HUD Tracking**: Scanning a maid automatically tracks her on the HUD. Click the [Track] button in the GUI to toggle tracking.
 
 ### Backpack Storage Core
-- Requires Sophisticated Backpack in maid's Curios **back** slot
-- Auto-transfers items from maid inventory into the backpack
-- Auto-extracts food when maid is hungry
-- If backpack is full, Storage Marker (if bound) takes over
+- Requires a **Sophisticated Backpack** in the maid's Curios **back** slot.
+- **Auto-store**: Every 1 second, transfers items from maid's inventory into the backpack. Skips locked slots.
+- **Auto-feed**: When the maid's hunger is low and no food is in inventory, extracts food from the backpack.
+- **Filter**: No filter — stores all non-bauble items.
+- **Backpack full fallback**: If the backpack is full and a Storage Marker is also bound, falls through to the container.
 
-### Kill-Proof Charm (True Immortal Bauble)
-- Uses TLM API `onDeath()` → intercepts at `die()` first line, blocks ALL death including `/kill`
-- `onTick()` heartbeat → restores health if somehow reduced to 0
-- No `BYPASSES_INVULNERABILITY` check → blocks even custom/penetrating damage
+### Kill-Proof Charm (for maids)
+- Uses TLM API `IMaidBauble.onDeath()` — intercepts at `die()` first line, returns `true` to block ALL death including `/kill`.
+- `onTick()` heartbeat — restores health to max if somehow reduced to 0 or below.
+- No `BYPASSES_INVULNERABILITY` check — blocks even custom/penetrating damage from modded weapons.
+- **LivingHurtEvent** — cancels all damage directly (added layer).
 
 ### Effect Immune Charm
-- Removes blindness, mining fatigue, slowness every tick
+- Every tick, removes blindness (`BLINDNESS`), mining fatigue (`DIG_SLOWDOWN`), and slowness (`MOVEMENT_SLOWDOWN`).
 
 ### Storage Marker
-- **Sneak+right-click container** → bind/unbind toggle
-- **Right-click air** → open filter GUI with 3x3 item grid
-- **Shift+click** items to add/remove from filter
-- **Whitelist/Blacklist** toggle button
-- Maid auto-deposits items into bound container (backpack has priority)
-- Auto-extracts food when hungry
-- Container destroyed → binding auto-cleared
+- **Bind**: Sneak+right-click any container (chest, barrel, etc.) that has an inventory capability. Already bound? Unbinds.
+- **Unbind**: Sneak+right-click the same container again, or sneak+right-click air.
+- **Filter GUI**: Right-click air to open. 3x3 grid. Shift+click items to add/remove from whitelist/blacklist.
+- **Auto-deposit**: Every 3 seconds, transfers items from maid's inventory into the bound container. Skips locked slots.
+- **Auto-feed**: When hungry, extracts food from the container.
+- **Item restock**: Pulls filtered items from the container when the maid has fewer than 4 in inventory (up to 16).
+- **Event-driven pull**: Listens to `MaidRequestItemEvent` — when the maid's AI needs seeds, arrows, or other items, pulls them from the container on demand.
+- **Backpack priority**: If Backpack Storage Core is also equipped, only activates when the backpack is full.
+
+### Player Immortal Charm
+- **LivingHurtEvent**: Cancels all damage to the player.
+- Works in Curios charm, belt, or back slot, or held in main/off hand.
+- Creative / Command only — no recipe.
 
 ### SopChestExtension (Wireless IO)
-- Registers Sophisticated Backpacks/Core blocks as valid Wireless IO chest types
-- Works with TLM's native Wireless IO system
+- Registers Sophisticated Backpacks/Core blocks as valid chest types for TLM's Wireless IO system using `@LittleMaidExtension` and `IChestType`.
 
 ### HUD Overlay
-- Shows nearest tamed maid's HP bar, armor, eat count, TPS, FPS
-- Right-click air with Info Scanner to open settings
-- Configurable: ON/OFF, position (5 presets), scale (0.5-2.0), opacity (0-100%), update interval (3-600s), X/Y offset
+- **Always visible**: Shows TPS, FPS, real computer time, and config info even without a maid nearby.
+- **When maid detected**: Shows the tracked or nearest maid's name, HP bar, armor value, and eat count.
+- **Tracking**: Scans a maid with the Info Scanner → auto-tracks that maid. Toggle via [Track] button in the scanner GUI.
+- **Configuration**: Right-click air with Info Scanner → HUD settings.
+  - ON/OFF toggle
+  - 5 position presets (Top-Left, Top-Center, Top-Right, Bottom-Left, Bottom-Right)
+  - Scale (0.5x ~ 2.0x)
+  - Opacity (0% ~ 100%)
+  - Update interval (3s ~ 600s)
+  - X/Y offset (-200 ~ 200)
 
-## Maid Priority Chain
+### Slot Locking
+- Lock specific slots in the maid's 36-slot inventory to prevent them from being stored by Backpack Storage Core or Storage Marker.
+- **Config**: Info Scanner GUI → [Slot] button → 6x6 grid → click to toggle lock.
+- **Stored on**: The maid's `persistentData` (shared between both baubles).
+- **Security**: Only the owner, creative mode players, or OP level 2+ can modify locks.
+- **Not affected**: Wireless IO has its own independent slot locking.
+
+### Commands (OP level 2)
+
+| Command | Description |
+|---|---|
+| `/maidadd <attr> <value> [uuid]` | Add attribute value to nearest/specified maid |
+| `/maidaddslot <slotType> [count]` | Add permanent Curios slot (default 1) |
+| `/maidaddslot <slotType> near <range> [count]` | Add slots to nearest maid within range |
+| `/maidaddslot <slotType> <uuid> [count]` | Add slots to specified maid |
+
+Supported attributes: `hp`, `armor`, `tough`, `dmg`, `speed`, `reach`, `dig`, `resist`, `explosion`, `thorns`, `crit`, `regen`
+
+### Maid Priority Chain
 ```
 Backpack Core + Backpack in back slot (highest priority)
   ↓ (backpack full / no backpack)
 Storage Marker bound container
   ↓ (container full / no binding)
-Items stay in maid inventory
-  ↓ (inventory full → TLM handles it)
+Items stay in maid inventory (TLM handles overflow)
 ```
 
-## Commands (OP level 2)
+### Maid AI Item Access
+The mod listens to `MaidRequestItemEvent` — when the maid's AI needs items (seeds for farming, arrows for archery, etc.) and can't find them in inventory, the mod automatically pulls them from:
+1. The Sophisticated Backpack in the back slot (if Backpack Storage Core is equipped)
+2. The bound container (if Storage Marker is equipped)
 
-| Command | Description |
-|---|---|
-| `/maidadd <attr> <value> [uuid]` | Add attribute to nearest/specified maid |
-| `/maidaddslot <slotType> [uuid]` | Add permanent Curios slot |
-| `/maidaddslot <slotType> near <range>` | Add slot to nearest maid within range blocks |
-
-Supported attributes: hp, armor, tough, dmg, speed, reach, dig, resist, explosion, thorns, crit, regen
+Items are pulled on demand — no polling, no waste.
 
 ## Dependencies
 
