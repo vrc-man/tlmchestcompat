@@ -56,7 +56,10 @@ public class TlmChestCompat {
 
     @SubscribeEvent
     public void onLivingHurt(LivingHurtEvent event) {
-        if (event.getEntity() instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
+        var entity = event.getEntity();
+
+        // Maid immunity via Kill-Proof Charm
+        if (entity instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
             var bauble = maid.getMaidBauble();
             for (int i = 0; i < bauble.getSlots(); i++) {
                 if (bauble.getStackInSlot(i).getItem() == ModItems.TRUE_IMMORTAL_BAUBLE.get()) {
@@ -65,6 +68,32 @@ public class TlmChestCompat {
                 }
             }
         }
+
+        // Player immunity via Player Immortal Bauble
+        if (entity instanceof net.minecraft.world.entity.player.Player player) {
+            if (hasPlayerBauble(player)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    private boolean hasPlayerBauble(net.minecraft.world.entity.player.Player player) {
+        // Check curios slots
+        try {
+            var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player).resolve();
+            if (opt.isPresent()) {
+                var handler = opt.get();
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    if (handler.getStackInSlot(i).getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // Check main/off hand
+        if (player.getMainHandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+        if (player.getOffhandItem().getItem() == ModItems.PLAYER_IMMORTAL_BAUBLE.get()) return true;
+
+        return false;
     }
 
     @SubscribeEvent

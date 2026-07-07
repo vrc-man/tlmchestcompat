@@ -81,12 +81,8 @@ public class MaidHudOverlay {
         g.drawString(mc.font, "\u00A77TPS:\u00A7" + tpsCol + String.format("%.1f", tps), 4, y, 0xFFFFFF);
         g.drawString(mc.font, "\u00A77FPS:\u00A7f" + String.format("%.0f", (float) mc.getFps()), 90, y, 0xFFFFFF);
 
-        if (mc.level != null) {
-            long time = mc.level.getDayTime();
-            int hour = (int) ((time / 1000 + 6) % 24);
-            int minute = (int) ((time % 1000) * 60 / 1000);
-            g.drawString(mc.font, "\u00A77\u65F6\u95F4:\u00A7f" + String.format("%02d:%02d", hour, minute), 4, y + 11, 0xFFFFFF);
-        }
+        var now = java.time.LocalTime.now();
+        g.drawString(mc.font, "\u00A77\u65F6\u95F4:\u00A7f" + now.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")), 4, y + 11, 0xFFFFFF);
         g.drawString(mc.font, "\u00A77S:\u00A7f" + HudConfig.xOffset + "\u00A77,\u00A7f" + HudConfig.yOffset, 90, y + 11, 0xFFFFFF);
     }
 }

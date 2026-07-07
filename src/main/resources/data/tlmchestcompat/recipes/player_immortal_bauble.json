@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "tlmchestcompat:true_immortal_bauble" },
+    { "item": "minecraft:totem_of_undying" }
+  ],
+  "result": {
+    "item": "tlmchestcompat:player_immortal_bauble"
+  }
+}
