@@ -4,75 +4,100 @@ A Forge mod for Minecraft 1.20.1 that extends [Touhou Little Maid](https://githu
 
 ## Items
 
-All items are available in the creative tab **TLM Chest Compat**.
+All items are available in the creative tab **TLM Chest Compat**. Use `/give @p tlmchestcompat:<id>` to obtain via command.
 
-| Item | Recipe | Function | Usage |
-|---|---|---|---|
-| **Info Scanner** | Compass + Sugar | View/set maid stats, configure HUD and slot locks | Right-click maid: GUI panel. Sneak+right-click maid (creative): +9000 all stats. Right-click air: HUD config. |
-| **Backpack Storage Core** | Ender Pearl + Blaze Rod (diagonal) | Auto-store items & auto-feed from backpack | Put in maid's bauble slot. Requires Sophisticated Backpack in maid's Curios **back** slot. |
-| **Kill-Proof Charm** (for maids) | Immortal Charm + Nether Star | Maid immune to ALL damage including `/kill` | Put in maid's bauble slot. Obsoleted by Maid Reflect Bauble. |
-| **Effect Immune Charm** | Milk Bucket + Fermented Spider Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness | Put in maid's bauble slot. |
-| **Storage Marker** | Ender Chest + Ender Pearl | Bind any container for maid to auto-deposit | Sneak+right-click container to bind. Right-click air to open filter GUI. Put in maid's bauble slot. |
-| **Player Immortal Charm** | Creative / Command only | Player immune to ALL damage including `/kill` | Hold in hand or place in Curios charm/belt/back slot. Right-click air: config screen (flight, night vision, slow falling, reflect). |
-| **Maid Reflect Bauble** | Creative / Command only | Maid immune to ALL damage, negative effects, and knockback. Reflects configurable damage (0-10x). | Put in maid's bauble slot. Right-click air with item in hand: config reflect multiplier. |
+| # | Item | ID | Recipe | Get Command |
+|---|---|---|---|---|
+| 1 | **Info Scanner** | `info_scanner` | 无序合成：指南针 + 糖 | `/give @p tlmchestcompat:info_scanner` |
+| 2 | **Backpack Storage Core** | `backpack_bauble` | 有序合成：末影珍珠（左上）+ 烈焰棒（右下） | `/give @p tlmchestcompat:backpack_bauble` |
+| 3 | **Kill-Proof Charm** | `true_immortal_bauble` | 无序合成：`vefc:maid_immortal_charm` + 下界之星 | `/give @p tlmchestcompat:true_immortal_bauble` |
+| 4 | **Effect Immune Charm** | `effect_immune_bauble` | 有序合成：牛奶桶（上中）+ 发酵蛛眼（左中）+ 末影珍珠（中中）+ 糖（下中） | `/give @p tlmchestcompat:effect_immune_bauble` |
+| 5 | **Storage Marker** | `storage_marker` | 无序合成：末影箱 + 末影珍珠 | `/give @p tlmchestcompat:storage_marker` |
+| 6 | **Player Immortal Charm** | `player_immortal_bauble` | ❌ 无配方，仅创造/命令 | `/give @p tlmchestcompat:player_immortal_bauble` |
+| 7 | **Maid Reflect Bauble** | `maid_reflect_bauble` | ❌ 无配方，仅创造/命令 | `/give @p tlmchestcompat:maid_reflect_bauble` |
 
 ## Features
 
-### Info Scanner
-- **Right-click maid**: Opens GUI panel showing UUID, HP, Armor, Toughness, Damage, all growth stats, and eat count.
-- **Sneak+right-click maid (creative only)**: Boosts all growth stats by +9000 (applied to entity attributes, not just NBT).
-- **Right-click air**: Opens HUD configuration screen.
-- **Buttons in GUI**: HUD Settings, Copy UUID, Slot Lock config.
-- **HUD Tracking**: Scanning a maid automatically tracks her on the HUD. Click the [Track] button in the GUI to toggle tracking.
+### ① Info Scanner — 信息扫描器
 
-### Backpack Storage Core
-- Requires a **Sophisticated Backpack** in the maid's Curios **back** slot.
-- **Auto-store**: Every 1 second, transfers items from maid's inventory into the backpack. Skips locked slots.
-- **Auto-feed**: When the maid's hunger is low and no food is in inventory, extracts food from the backpack.
-- **Filter**: No filter — stores all non-bauble items.
-- **Backpack full fallback**: If the backpack is full and a Storage Marker is also bound, falls through to the container.
+**获取方式**：合成（指南针 + 糖）或 `/give @p tlmchestcompat:info_scanner`
 
-### Kill-Proof Charm (for maids)
-- Uses TLM API `IMaidBauble.onDeath()` — intercepts at `die()` first line, returns `true` to block ALL death including `/kill`.
-- `onTick()` heartbeat — restores health to max if somehow reduced to 0 or below.
-- No `BYPASSES_INVULNERABILITY` check — blocks even custom/penetrating damage from modded weapons.
-- **LivingHurtEvent** — cancels all damage directly (added layer).
+| 交互 | 效果 |
+|---|---|
+| **右键女仆** | 打开信息面板：UUID、血量、护甲、韧性、伤害、全部 13 项成长属性、进食次数 |
+| **潜行+右键女仆（创造模式）** | 全部成长属性 +9000（同时写入实体属性，无需重启） |
+| **右键空气** | 打开 HUD 配置界面 |
+| **面板按钮** | [HUD设置]、[复制UUID]、[槽位锁定]（6×6 开关网格） |
+| **HUD 追踪** | 扫描女仆后自动追踪；面板内 [追踪] 按钮可切换 |
 
-### Effect Immune Charm
-- Every tick, removes blindness (`BLINDNESS`), mining fatigue (`DIG_SLOWDOWN`), and slowness (`MOVEMENT_SLOWDOWN`).
+### ② Backpack Storage Core — 背饰背包核心
 
-### Storage Marker
-- **Bind**: Sneak+right-click any container (chest, barrel, etc.) that has an inventory capability. Already bound? Unbinds.
-- **Unbind**: Sneak+right-click the same container again, or sneak+right-click air.
-- **Filter GUI**: Right-click air to open. 3x3 grid. Shift+click items to add/remove from whitelist/blacklist.
-- **Auto-deposit**: Every 3 seconds, transfers items from maid's inventory into the bound container. Skips locked slots.
-- **Auto-feed**: When hungry, extracts food from the container.
-- **Item restock**: Pulls filtered items from the container when the maid has fewer than 4 in inventory (up to 16).
-- **Event-driven pull**: Listens to `MaidRequestItemEvent` — when the maid's AI needs seeds, arrows, or other items, pulls them from the container on demand.
-- **Backpack priority**: If Backpack Storage Core is also equipped, only activates when the backpack is full.
+**获取方式**：合成（末影珍珠 + 烈焰棒 对角摆放）或 `/give @p tlmchestcompat:backpack_bauble`
 
-### Player Immortal Charm
-- **LivingHurtEvent**: Cancels all damage to the player, including `/kill`.
-- Works in Curios charm, belt, or back slot, OR held in main/off hand, OR anywhere in inventory.
-- **Constant buffs**: Applied every tick — Saturation IV, Regeneration II, Absorption IV, Fire Resistance, Water Breathing, Resistance IV.
-- **Debuff cleanse**: Every tick removes 11 negative effects (poison, wither, slowness, mining fatigue, blindness, hunger, weakness, levitation, bad luck, bad omen, darkness).
-- **Night vision** (toggleable via config screen).
-- **100% knockback resistance** forced every tick.
-- **Right-click air**: Opens config screen with:
-  - Flight ON/OFF toggle
-  - Flight speed (0.5x ~ 10x)
-  - Slow falling ON/OFF toggle
-  - Night vision ON/OFF toggle
-  - Reflect damage multiplier (0x ~ 10x, step 0.5). When > 0, reflects incoming damage × multiplier as magic damage + sets attacker on fire (multiplier × 2 seconds).
-- Creative / Command only — no recipe.
+- **条件**：女仆 Curios **背** 饰槽必须装有精妙背包（Sophisticated Backpack）
+- **自动存入**：每 1 秒将女仆物品栏物品存入背包（跳过锁定槽位）
+- **自动取食**：女仆饥饿时从背包提取食物喂食
+- **优先级**：背包满了且有 Storage Marker 时，自动降级到容器
 
-### Maid Reflect Bauble
-- **Full immunity**: Cancels all damage including `/kill` via `LivingHurtEvent`.
-- **Effect immunity**: Every tick removes 11 negative effects (poison, wither, slowness, mining fatigue, blindness, hunger, weakness, levitation, bad luck, bad omen, darkness).
-- **100% knockback resistance** forced every tick.
-- **Configurable reflect**: Right-click air opens config screen. Reflects incoming damage back to the attacker at 0x-10x multiplier (default 1x, step 0.5). Also sets attacker on fire (multiplier × 2 seconds).
-- **Full superset of Kill-Proof Charm** — no need to equip both.
-- Put in maid's bauble slot. Creative / Command only — no recipe.
+### ③ Kill-Proof Charm — Kill不死护符
+
+**获取方式**：合成（`vefc:maid_immortal_charm` + 下界之星）或 `/give @p tlmchestcompat:true_immortal_bauble`
+
+- **完全免伤**：`IMaidBauble.onDeath()` + `LivingHurtEvent` 双层拦截，阻挡包括 `/kill` 在内的所有伤害
+- **心跳复活**：每 tick 检查血量，<=0 时立即恢复满血
+- **注意**：已被 **女仆反伤护符** 完全取代（后者多了负面免疫、抗击退、可调反伤）
+
+### ④ Effect Immune Charm — 状态免疫护符
+
+**获取方式**：合成（牛奶桶 + 发酵蛛眼 + 末影珍珠 + 糖）或 `/give @p tlmchestcompat:effect_immune_bauble`
+
+- 每 tick 清除 3 种负面效果：失明（BLINDNESS）、挖掘疲劳（DIG_SLOWDOWN）、缓慢（MOVEMENT_SLOWDOWN）
+
+### ⑤ Storage Marker — 存储标记
+
+**获取方式**：合成（末影箱 + 末影珍珠）或 `/give @p tlmchestcompat:storage_marker`
+
+| 交互 | 效果 |
+|---|---|
+| **潜行+右键容器** | 绑定/解绑容器（箱子、桶等有库存能力的方块） |
+| **潜行+右键空气** | 解绑当前容器 |
+| **右键空气** | 打开过滤 GUI（3×3 网格，Shift+点击添加/移除物品，白名单/黑名单切换） |
+| **自动存入** | 每 3 秒将女仆物品栏物品存入绑定容器（跳过锁定槽位） |
+| **自动取食** | 女仆饥饿时从容器提取食物 |
+| **物品补充** | 女仆物品栏某物品 <4 个时，从容器的过滤列表中补充到 16 个 |
+| **事件驱动** | 监听 `MaidRequestItemEvent`——女仆 AI 需要种子/箭等时自动从容器提取 |
+| **背包优先** | 同时装有背饰背包核心时，仅在背包满后激活 |
+
+### ⑥ Player Immortal Charm — 玩家无敌饰品
+
+**获取方式**：❌ 无配方，仅 `/give @p tlmchestcompat:player_immortal_bauble` 或创造模式
+
+**佩戴位置**：Curios charm/belt/back 槽位，或主手/副手/背包任意位置
+
+| 功能 | 说明 |
+|---|---|
+| **完全免伤** | 取消所有伤害包括 `/kill` |
+| **常驻 Buff** | 每 tick 施加：饱和 IV、再生 II、吸收 IV、防火、水下呼吸、抗性 IV |
+| **负面免疫** | 每 tick 清除 11 种 DEBUFF：中毒、凋零、缓慢、挖掘疲劳、失明、饥饿、虚弱、漂浮、霉运、不祥之兆、黑暗 |
+| **夜视** | 可在配置界面开关 |
+| **抗击退** | 100% 抗击退（每 tick 强制） |
+| **右键空气** | 打开配置界面：飞行开关 + 飞行速度（0.5x~10x）+ 缓降开关 + 夜视开关 + 反伤倍率（0x~10x，步进 0.5） |
+| **反伤机制** | 倍率 > 0 时，将所受伤害 × 倍率反伤为魔法伤害 + 攻击者着火（倍率 × 2 秒） |
+
+### ⑦ Maid Reflect Bauble — 女仆反伤护符
+
+**获取方式**：❌ 无配方，仅 `/give @p tlmchestcompat:maid_reflect_bauble` 或创造模式
+
+**佩戴位置**：女仆饰品槽
+
+| 功能 | 说明 |
+|---|---|
+| **完全免伤** | 取消所有伤害包括 `/kill` |
+| **负面免疫** | 每 tick 清除 11 种 DEBUFF（同玩家无敌饰品） |
+| **抗击退** | 100% 抗击退（每 tick 强制） |
+| **右键空气** | 打开倍率配置界面（0x~10x，步进 0.5，默认 1x） |
+| **反伤机制** | 倍率 > 0 时，将所受伤害 × 倍率反伤为魔法伤害 + 攻击者着火（倍率 × 2 秒） |
+| **全功能包含** | ✅ Kill不死护符 + ✅ 状态免疫护符 的完整功能，无需再装备这两者 |
 
 ### SopChestExtension (Wireless IO)
 - Registers Sophisticated Backpacks/Core blocks as valid chest types for TLM's Wireless IO system using `@LittleMaidExtension` and `IChestType`.
