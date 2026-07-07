@@ -13,7 +13,8 @@ All items are available in the creative tab **TLM Chest Compat**.
 | **Kill-Proof Charm** (for maids) | Immortal Charm (`vefc:maid_immortal_charm`) + Nether Star | Maid immune to ALL damage including `/kill` | Put in maid's bauble slot. |
 | **Effect Immune Charm** | Milk Bucket + Fermented Spider Eye + Ender Pearl + Sugar | Removes blindness, mining fatigue, slowness | Put in maid's bauble slot. |
 | **Storage Marker** | Ender Chest + Ender Pearl | Bind any container for maid to auto-deposit | Sneak+right-click container to bind. Right-click air to open filter GUI. Put in maid's bauble slot. |
-| **Player Immortal Charm** | Creative / Command only | Player immune to ALL damage including `/kill` | Hold in hand or place in Curios charm/belt/back slot. |
+| **Player Immortal Charm** | Creative / Command only | Player immune to ALL damage including `/kill` | Hold in hand or place in Curios charm/belt/back slot. Right-click air: config screen (flight, night vision, slow falling, reflect). |
+| **Maid Reflect Bauble** | Creative / Command only | Maid immune to ALL damage, negative effects, and knockback. Reflects configurable damage (0-10x). | Put in maid's bauble slot. Right-click air with item in hand: config reflect multiplier. |
 
 ## Features
 
@@ -53,7 +54,15 @@ All items are available in the creative tab **TLM Chest Compat**.
 ### Player Immortal Charm
 - **LivingHurtEvent**: Cancels all damage to the player.
 - Works in Curios charm, belt, or back slot, or held in main/off hand.
+- **Right-click air**: Opens config screen with flight toggle, speed (0.5x-10x), slow falling, night vision, and reflect multiplier (0-10x).
 - Creative / Command only — no recipe.
+
+### Maid Reflect Bauble
+- **Full immunity**: Cancels all damage including `/kill` via `LivingHurtEvent`.
+- **Effect immunity**: Every tick removes 11 negative effects (poison, wither, slowness, mining fatigue, blindness, hunger, weakness, levitation, bad luck, bad omen, darkness).
+- **Knockback resistance**: 100% knockback resistance forced every tick.
+- **Configurable reflect**: Right-click air opens config screen. Reflects incoming damage back to the attacker at 0.5x-10x multiplier (default 1x). Also sets attacker on fire (multiplier × 2 seconds).
+- Put in maid's bauble slot. Creative / Command only — no recipe.
 
 ### SopChestExtension (Wireless IO)
 - Registers Sophisticated Backpacks/Core blocks as valid chest types for TLM's Wireless IO system using `@LittleMaidExtension` and `IChestType`.
