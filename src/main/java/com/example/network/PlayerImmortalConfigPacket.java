@@ -13,14 +13,20 @@ public class PlayerImmortalConfigPacket {
     public final boolean nightVision;
     public final boolean lightning;
     public final double reflectMult;
+    public final boolean waterWalk;
+    public final boolean lavaWalk;
+    public final double groundSpeed;
 
-    public PlayerImmortalConfigPacket(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, boolean lightning, double reflectMult) {
+    public PlayerImmortalConfigPacket(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, boolean lightning, double reflectMult, boolean waterWalk, boolean lavaWalk, double groundSpeed) {
         this.flightSpeed = flightSpeed;
         this.flightEnabled = flightEnabled;
         this.slowFalling = slowFalling;
         this.nightVision = nightVision;
         this.lightning = lightning;
         this.reflectMult = reflectMult;
+        this.waterWalk = waterWalk;
+        this.lavaWalk = lavaWalk;
+        this.groundSpeed = groundSpeed;
     }
 
     public void encode(FriendlyByteBuf buf) {
@@ -30,11 +36,14 @@ public class PlayerImmortalConfigPacket {
         buf.writeBoolean(nightVision);
         buf.writeBoolean(lightning);
         buf.writeDouble(reflectMult);
+        buf.writeBoolean(waterWalk);
+        buf.writeBoolean(lavaWalk);
+        buf.writeDouble(groundSpeed);
     }
 
     public static PlayerImmortalConfigPacket decode(FriendlyByteBuf buf) {
         return new PlayerImmortalConfigPacket(
-            buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble());
+            buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readDouble(), buf.readBoolean(), buf.readBoolean(), buf.readDouble());
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -60,6 +69,9 @@ public class PlayerImmortalConfigPacket {
             tag.putBoolean("nightVision", nightVision);
             tag.putBoolean("lightning", lightning);
             tag.putDouble("reflectMult", reflectMult);
+            tag.putBoolean("waterWalk", waterWalk);
+            tag.putBoolean("lavaWalk", lavaWalk);
+            tag.putDouble("groundSpeed", groundSpeed);
         });
         ctx.get().setPacketHandled(true);
     }

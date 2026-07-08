@@ -5,8 +5,8 @@ plugins {
 }
 
 version = '1.0.0'
-group = 'com.example'
-archivesBaseName = 'tlmchestcompat'
+group = 'com.fundationbufull'
+archivesBaseName = 'fundationbufull'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -29,5 +29,5 @@ dependencies {
 }
 
 jar {
-    manifest { attributes(['Specification-Title': 'tlmchestcompat', 'Specification-Version': '1']) }
+    manifest { attributes(['Specification-Title': 'fundationbufull', 'Specification-Version': '1']) }
 }

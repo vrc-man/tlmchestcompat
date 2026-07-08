@@ -60,10 +60,7 @@ public class HudConfigScreen extends Screen {
 
         // Row 4: Back button
         t += LH + 4;
-        addRenderableWidget(Button.builder(Component.literal("\u00A7a[\u8FD4\u56DE]"), b -> {
-            if (ClientProxy.cachedMaidData != null) this.minecraft.setScreen(new InfoScreen(ClientProxy.cachedMaidData));
-            else onClose();
-        }).bounds(px + PW / 2 - 30, t, 60, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("\u00A7a[\u5173\u95ED]"), b -> onClose()).bounds(px + PW / 2 - 30, t, 60, 18).build());
     }
 
     private void btn2(int y, int col, String label, String val, Button.OnPress cb) {

@@ -3,37 +3,19 @@ loaderVersion="[47,)"
 license="MIT"
 
 [[mods]]
-    modId="tlmchestcompat"
+    modId="fundationbufull"
     version="1.0.0"
-    displayName="TLM Chest Compat"
-    description="Adds Sophisticated Backpacks/Storage support to TLM Wireless IO"
+    displayName="Fundationbufull"
+    description="Player Immortal Charm with full L2Hostility immunity"
     authors="example"
 
-[[dependencies.tlmchestcompat]]
-    modId="touhou_little_maid"
-    mandatory=false
-    versionRange="[1.5,)"
-    ordering="AFTER"
-    side="BOTH"
-[[dependencies.tlmchestcompat]]
-    modId="sophisticatedbackpacks"
-    mandatory=false
-    versionRange="[3,)"
-    ordering="NONE"
-    side="BOTH"
-[[dependencies.tlmchestcompat]]
-    modId="sophisticatedcore"
-    mandatory=false
-    versionRange="[1,)"
-    ordering="NONE"
-    side="BOTH"
-[[dependencies.tlmchestcompat]]
+[[dependencies.fundationbufull]]
     modId="forge"
     mandatory=true
     versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.tlmchestcompat]]
+[[dependencies.fundationbufull]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.20.1,1.21)"

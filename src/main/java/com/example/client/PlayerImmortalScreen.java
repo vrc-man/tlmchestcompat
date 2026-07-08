@@ -11,17 +11,20 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class PlayerImmortalScreen extends Screen {
-    private static final int PW = 320, PH = 504, BH = 36, BH2 = 50;
+    private static final int PW = 320, PH = 700, BH = 36, BH2 = 50;
     private double flightSpeed = 1.0;
     private boolean flightEnabled = true;
     private boolean slowFalling = false;
     private boolean nightVision = false;
     private boolean lightning = true;
     private double reflectMult = 1.0;
+    private boolean waterWalk = false;
+    private boolean lavaWalk = false;
+    private double groundSpeed = 1.0;
     private int px, py;
-    private Button btnFlight, btnSlow, btnNight, btnLightning, speedVal, reflectVal;
+    private Button btnFlight, btnSlow, btnNight, btnLightning, btnWater, btnLava, speedVal, reflectVal, groundVal;
 
-    public PlayerImmortalScreen(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, boolean lightning, double reflectMult) {
+    public PlayerImmortalScreen(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, boolean lightning, double reflectMult, boolean waterWalk, boolean lavaWalk, double groundSpeed) {
         super(Component.literal(""));
         this.flightSpeed = flightSpeed;
         this.flightEnabled = flightEnabled;
@@ -29,6 +32,9 @@ public class PlayerImmortalScreen extends Screen {
         this.nightVision = nightVision;
         this.lightning = lightning;
         this.reflectMult = reflectMult;
+        this.waterWalk = waterWalk;
+        this.lavaWalk = lavaWalk;
+        this.groundSpeed = groundSpeed;
     }
 
     @Override
@@ -55,7 +61,7 @@ public class PlayerImmortalScreen extends Screen {
         speedVal = Button.builder(Component.literal("\u00A70\u00A7l" + nf(flightSpeed)), b -> {}).bounds(x + 144, y, 76, BH).build();
         addRenderableWidget(speedVal);
         addRenderableWidget(Button.builder(Component.literal("\u00A7a\u00A7l+"), b -> {
-            flightSpeed = Math.min(10.0, flightSpeed + 0.5);
+            flightSpeed = Math.min(50.0, flightSpeed + 0.5);
             speedVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(flightSpeed)));
         }).bounds(x + 224, y, 50, BH).build());
 
@@ -90,14 +96,42 @@ public class PlayerImmortalScreen extends Screen {
         reflectVal = Button.builder(Component.literal("\u00A70\u00A7l" + nf(reflectMult)), b -> {}).bounds(x + 144, y, 76, BH).build();
         addRenderableWidget(reflectVal);
         addRenderableWidget(Button.builder(Component.literal("\u00A7a\u00A7l+"), b -> {
-            reflectMult = Math.min(10.0, reflectMult + 0.5);
+            reflectMult = Math.min(50.0, reflectMult + 0.5);
             reflectVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(reflectMult)));
         }).bounds(x + 224, y, 50, BH).build());
 
-        // Row 7: Save
+        // Row 7: Water Walk
+        y += 64;
+        btnWater = addRowBtn(x, y, "水上行走", waterWalk, b -> {
+            waterWalk = !waterWalk;
+            b.setMessage(lbl(waterWalk));
+        });
+
+        // Row 8: Lava Walk
+        y += 64;
+        btnLava = addRowBtn(x, y, "岩浆行走", lavaWalk, b -> {
+            lavaWalk = !lavaWalk;
+            b.setMessage(lbl(lavaWalk));
+        });
+
+        // Row 9: Ground Speed
+        y += 64;
+        addLabel("地面速度", x, y);
+        addRenderableWidget(Button.builder(Component.literal("\u00A7c\u00A7l-"), b -> {
+            groundSpeed = Math.max(0.5, groundSpeed - 0.5);
+            groundVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(groundSpeed)));
+        }).bounds(x + 90, y, 50, BH).build());
+        groundVal = Button.builder(Component.literal("\u00A70\u00A7l" + nf(groundSpeed)), b -> {}).bounds(x + 144, y, 76, BH).build();
+        addRenderableWidget(groundVal);
+        addRenderableWidget(Button.builder(Component.literal("\u00A7a\u00A7l+"), b -> {
+            groundSpeed = Math.min(50.0, groundSpeed + 0.5);
+            groundVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(groundSpeed)));
+        }).bounds(x + 224, y, 50, BH).build());
+
+        // Row 10: Save
         y += 58;
         addRenderableWidget(Button.builder(Component.literal("\u00A74\u00A7l\u2714 保存"), b -> {
-            ModNetwork.CHANNEL.sendToServer(new PlayerImmortalConfigPacket(flightSpeed, flightEnabled, slowFalling, nightVision, lightning, reflectMult));
+            ModNetwork.CHANNEL.sendToServer(new PlayerImmortalConfigPacket(flightSpeed, flightEnabled, slowFalling, nightVision, lightning, reflectMult, waterWalk, lavaWalk, groundSpeed));
             onClose();
         }).bounds(x, y, xw, BH).build());
     }

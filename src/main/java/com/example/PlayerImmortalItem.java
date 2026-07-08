@@ -36,6 +36,9 @@ public class PlayerImmortalItem extends BaubleItem {
                 tag.getBoolean("slowFalling"),
                 tag.getBoolean("nightVision"),
                 !tag.contains("lightning") || tag.getBoolean("lightning"),
-                tag.contains("reflectMult") ? tag.getDouble("reflectMult") : 0));
+                tag.contains("reflectMult") ? tag.getDouble("reflectMult") : 0,
+                tag.getBoolean("waterWalk"),
+                tag.getBoolean("lavaWalk"),
+                tag.contains("groundSpeed") ? tag.getDouble("groundSpeed") : 1.0));
     }
 }
