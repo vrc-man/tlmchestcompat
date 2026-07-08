@@ -1,5 +1,7 @@
 package com.example.client;
 
+import com.example.ModNetwork;
+import com.example.network.BaubleLockRequestPacket;
 import com.example.network.MaidDataPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -34,22 +36,6 @@ public class InfoScreen extends Screen {
             }
         }).bounds(bx + 76, by, 72, 16).build());
 
-        addRenderableWidget(Button.builder(Component.literal("\u00A7c[\u69FD\u4F4D]"), b -> {
-            var locks = new boolean[com.example.SlotLockHelper.SLOT_COUNT];
-            if (data != null) {
-                var mc = net.minecraft.client.Minecraft.getInstance();
-                if (mc.level != null) {
-                    for (var e : mc.level.entitiesForRendering()) {
-                        if (e.getUUID().toString().equals(data.uuid) && e instanceof net.minecraft.world.entity.LivingEntity living) {
-                            locks = com.example.SlotLockHelper.getLocks(living);
-                            break;
-                        }
-                    }
-                }
-                this.minecraft.setScreen(new SlotLockScreen(locks, data.uuid));
-            }
-        }).bounds(bx + 152, by, 72, 16).build());
-
         // Row 2: Track button
         int by2 = by + 20;
         boolean isTracking = ClientProxy.trackedMaidUUID != null && data != null && ClientProxy.trackedMaidUUID.equals(data.uuid);
@@ -64,6 +50,39 @@ public class InfoScreen extends Screen {
                 // Refresh screen to update button text
                 this.minecraft.setScreen(new InfoScreen(data));
             }).bounds(bx + 76, by2, 72, 16).build());
+
+        // Row 3: Slot lock buttons for equipped baubles
+        int by3 = by2 + 20;
+        int slotX = bx;
+        if (data != null && (data.equippedBaubles & 1) != 0) {
+            addRenderableWidget(Button.builder(Component.literal("\u00A7c[\u69FD\u4F4D\u80CC\u5305]"), b -> {
+                ModNetwork.CHANNEL.sendToServer(new BaubleLockRequestPacket(data.uuid, findBaubleSlot(0)));
+            }).bounds(slotX, by3, 72, 16).build());
+            slotX += 76;
+        }
+        if (data != null && (data.equippedBaubles & 2) != 0) {
+            addRenderableWidget(Button.builder(Component.literal("\u00A7c[\u69FD\u4F4D\u5B58\u50A8]"), b -> {
+                ModNetwork.CHANNEL.sendToServer(new BaubleLockRequestPacket(data.uuid, findBaubleSlot(1)));
+            }).bounds(slotX, by3, 72, 16).build());
+        }
+    }
+
+    private int findBaubleSlot(int type) {
+        if (data == null) return -1;
+        // 0=backpack, 1=storage_marker
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return -1;
+        for (var e : mc.level.entitiesForRendering()) {
+            if (e.getUUID().toString().equals(data.uuid) && e instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
+                var bauble = maid.getMaidBauble();
+                for (int i = 0; i < bauble.getSlots(); i++) {
+                    var item = bauble.getStackInSlot(i).getItem();
+                    if (type == 0 && item == com.example.ModItems.BACKPACK_BAUBLE.get()) return i;
+                    if (type == 1 && item == com.example.ModItems.STORAGE_MARKER.get()) return i;
+                }
+            }
+        }
+        return -1;
     }
 
     @Override

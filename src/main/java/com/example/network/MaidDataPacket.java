@@ -15,6 +15,7 @@ public class MaidDataPacket {
     public float damage, baseDamage;
     public int explosion, thorns, tough, crit, dig, resist, eatHP;
     public double reach, speed, regenPct;
+    public int equippedBaubles; // bit 1=backpack, bit 2=storage_marker
 
     public MaidDataPacket() {}
 
@@ -41,6 +42,7 @@ public class MaidDataPacket {
         buf.writeDouble(reach);
         buf.writeDouble(speed);
         buf.writeDouble(regenPct);
+        buf.writeInt(equippedBaubles);
     }
 
     public static MaidDataPacket decode(FriendlyByteBuf buf) {
@@ -67,6 +69,7 @@ public class MaidDataPacket {
         d.reach = buf.readDouble();
         d.speed = buf.readDouble();
         d.regenPct = buf.readDouble();
+        d.equippedBaubles = buf.readInt();
         return d;
     }
 

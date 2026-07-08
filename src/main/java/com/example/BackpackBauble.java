@@ -26,15 +26,16 @@ public class BackpackBauble implements IMaidBauble {
 
         backpack.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(backpackInv -> {
             ItemStackHandler maidInv = maid.getMaidInv();
-            tryFeed(maid, maidInv, backpackInv);
-            tryStore(maidInv, backpackInv, maid);
-            tryRestock(maidInv, backpackInv);
+            tryFeed(maid, maidInv, backpackInv, baubleItem);
+            tryStore(maidInv, backpackInv, maid, baubleItem);
+            tryRestock(maidInv, backpackInv, maid, baubleItem);
         });
     }
 
-    private void tryFeed(EntityMaid maid, ItemStackHandler maidInv, IItemHandler backpackInv) {
+    private void tryFeed(EntityMaid maid, ItemStackHandler maidInv, IItemHandler backpackInv, ItemStack baubleItem) {
         if (maid.getHunger() >= HUNGER_THRESHOLD) return;
         if (hasFood(maidInv)) return;
+        boolean[] locks = SlotLockHelper.getLocks(baubleItem);
 
         for (int i = 0; i < backpackInv.getSlots(); i++) {
             ItemStack stack = backpackInv.getStackInSlot(i);
@@ -43,8 +44,12 @@ public class BackpackBauble implements IMaidBauble {
             ItemStack food = backpackInv.extractItem(i, 1, false);
             if (food.isEmpty()) continue;
 
-            for (int j = 0; j < maidInv.getSlots(); j++) {
-                if (maidInv.getStackInSlot(j).isEmpty()) {
+            // Prefer unlocked empty slots; fall back to locked empty slots
+            for (int pass = 0; pass < 2; pass++) {
+                for (int j = 0; j < maidInv.getSlots(); j++) {
+                    if (!maidInv.getStackInSlot(j).isEmpty()) continue;
+                    if (pass == 0 && (j < locks.length && locks[j])) continue;
+                    if (pass == 1 && !(j < locks.length && locks[j])) continue;
                     maidInv.setStackInSlot(j, food);
                     return;
                 }
@@ -54,12 +59,12 @@ public class BackpackBauble implements IMaidBauble {
         }
     }
 
-    private void tryStore(ItemStackHandler maidInv, IItemHandler backpackInv, EntityMaid maid) {
-        autoStore(maidInv, backpackInv, maid);
+    private void tryStore(ItemStackHandler maidInv, IItemHandler backpackInv, EntityMaid maid, ItemStack baubleItem) {
+        autoStore(maidInv, backpackInv, maid, baubleItem);
     }
 
-    private void autoStore(ItemStackHandler maidInv, IItemHandler targetInv, EntityMaid maid) {
-        boolean[] locks = maid == null ? new boolean[0] : SlotLockHelper.getLocks(maid);
+    private void autoStore(ItemStackHandler maidInv, IItemHandler targetInv, EntityMaid maid, ItemStack baubleItem) {
+        boolean[] locks = baubleItem == null ? new boolean[0] : SlotLockHelper.getLocks(baubleItem);
         for (int i = 0; i < maidInv.getSlots(); i++) {
             if (i < locks.length && locks[i]) continue; // skip locked slot
             ItemStack stack = maidInv.getStackInSlot(i);
@@ -114,7 +119,8 @@ public class BackpackBauble implements IMaidBauble {
         return stack.getItem().getClass().getName().toLowerCase().contains("sophisticatedbackpacks");
     }
 
-    private void tryRestock(ItemStackHandler maidInv, IItemHandler backpackInv) {
+    private void tryRestock(ItemStackHandler maidInv, IItemHandler backpackInv, EntityMaid maid, ItemStack baubleItem) {
+        boolean[] locks = SlotLockHelper.getLocks(baubleItem);
         for (int i = 0; i < backpackInv.getSlots(); i++) {
             var stack = backpackInv.getStackInSlot(i);
             if (stack.isEmpty()) continue;
@@ -123,6 +129,7 @@ public class BackpackBauble implements IMaidBauble {
 
             int maidCount = 0;
             for (int j = 0; j < maidInv.getSlots(); j++) {
+                if (j < locks.length && locks[j]) continue;
                 var s = maidInv.getStackInSlot(j);
                 if (!s.isEmpty() && ItemStack.isSameItem(s, stack)) maidCount += s.getCount();
             }
@@ -134,9 +141,10 @@ public class BackpackBauble implements IMaidBauble {
             var taken = backpackInv.extractItem(i, needed, false);
             if (taken.isEmpty()) continue;
 
-            // Merge with existing or find empty slot
+            // Merge with existing (skip locked slots)
             boolean added = false;
             for (int j = 0; j < maidInv.getSlots() && !taken.isEmpty(); j++) {
+                if (j < locks.length && locks[j]) continue;
                 var s = maidInv.getStackInSlot(j);
                 if (!s.isEmpty() && ItemStack.isSameItem(s, taken) && s.getCount() < s.getMaxStackSize()) {
                     int space = s.getMaxStackSize() - s.getCount();
@@ -146,7 +154,9 @@ public class BackpackBauble implements IMaidBauble {
                     if (taken.isEmpty()) added = true;
                 }
             }
+            // Find empty slot (skip locked slots)
             for (int j = 0; j < maidInv.getSlots() && !taken.isEmpty(); j++) {
+                if (j < locks.length && locks[j]) continue;
                 if (maidInv.getStackInSlot(j).isEmpty()) {
                     maidInv.setStackInSlot(j, taken);
                     added = true;

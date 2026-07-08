@@ -1,11 +1,13 @@
 package com.example.client;
 
 import com.example.ModNetwork;
+import com.example.SlotLockHelper;
 import com.example.network.SlotLockPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -13,13 +15,27 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class SlotLockScreen extends Screen {
     private static final int COLS = 6, ROWS = 6;
     private final boolean[] locks;
-    private final String maidUuid;
+    private final ItemStack stack; // null for packet mode
+    private final String maidUuid; // null for direct mode
+    private final int baubleSlot; // -1 for direct mode
     private int panelX, panelY;
 
-    public SlotLockScreen(boolean[] locks, String maidUuid) {
+    // Direct mode: right-click item in hand
+    public SlotLockScreen(ItemStack stack, boolean forStorageMarker) {
         super(Component.literal(""));
+        this.stack = stack;
+        this.locks = SlotLockHelper.getLocks(stack);
+        this.maidUuid = null;
+        this.baubleSlot = -1;
+    }
+
+    // Packet mode: configured via scanner (equipped on maid)
+    public SlotLockScreen(boolean[] locks, String maidUuid, int baubleSlot) {
+        super(Component.literal(""));
+        this.stack = null;
         this.locks = locks;
         this.maidUuid = maidUuid;
+        this.baubleSlot = baubleSlot;
     }
 
     @Override
@@ -41,7 +57,13 @@ public class SlotLockScreen extends Screen {
         addRenderableWidget(Button.builder(
             Component.literal("\u00A7r\u4FDD\u5B58"),
             b -> {
-                ModNetwork.CHANNEL.sendToServer(new SlotLockPacket(locks, maidUuid));
+                if (maidUuid != null) {
+                    // Equipped on maid: send to server with maid UUID + slot
+                    ModNetwork.CHANNEL.sendToServer(new SlotLockPacket(locks, maidUuid, baubleSlot));
+                } else {
+                    // Hand item: send to server with empty UUID + slot=-1 (server finds hand item)
+                    ModNetwork.CHANNEL.sendToServer(new SlotLockPacket(locks, "", -1));
+                }
                 onClose();
             }).bounds(cx - 62, panelY + ROWS * 18 + 34, 58, 18).build());
 

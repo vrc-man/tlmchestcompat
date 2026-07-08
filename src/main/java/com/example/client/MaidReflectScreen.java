@@ -11,14 +11,16 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class MaidReflectScreen extends Screen {
-    private static final int PW = 240, PH = 180;
+    private static final int PW = 240, PH = 280;
     private double reflectMult = 1.0;
+    private boolean lightning = true;
     private int px, py;
-    private Button reflectVal;
+    private Button reflectVal, btnLightning;
 
-    public MaidReflectScreen(double reflectMult) {
+    public MaidReflectScreen(double reflectMult, boolean lightning) {
         super(Component.literal(""));
         this.reflectMult = reflectMult;
+        this.lightning = lightning;
     }
 
     @Override
@@ -29,6 +31,7 @@ public class MaidReflectScreen extends Screen {
 
         int y = py + 50;
 
+        // Row 1: Reflect multiplier
         addRenderableWidget(Button.builder(Component.literal("\u00A78\u00A7l反伤倍率"), b -> {}).bounds(x, y, 70, 36).build());
         addRenderableWidget(Button.builder(Component.literal("\u00A7c\u00A7l-"), b -> {
             reflectMult = Math.max(0, reflectMult - 0.5);
@@ -41,9 +44,18 @@ public class MaidReflectScreen extends Screen {
             reflectVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(reflectMult)));
         }).bounds(x + 184, y, 40, 36).build());
 
-        y += 50;
+        // Row 2: Lightning toggle
+        y += 60;
+        addRenderableWidget(Button.builder(Component.literal("\u00A78\u00A7l闪电"), b -> {}).bounds(x, y, 70, 36).build());
+        btnLightning = Button.builder(
+            Component.literal("\u00A7l" + (lightning ? "\u00A7a\u2714 ON" : "\u00A78\u2718 OFF")),
+            b -> { lightning = !lightning; b.setMessage(Component.literal("\u00A7l" + (lightning ? "\u00A7a\u2714 ON" : "\u00A78\u2718 OFF"))); }
+        ).bounds(x + 80, y, 120, 36).build();
+        addRenderableWidget(btnLightning);
+
+        y += 60;
         addRenderableWidget(Button.builder(Component.literal("\u00A74\u00A7l\u2714 保存"), b -> {
-            ModNetwork.CHANNEL.sendToServer(new MaidReflectPacket(reflectMult));
+            ModNetwork.CHANNEL.sendToServer(new MaidReflectPacket(reflectMult, lightning));
             onClose();
         }).bounds(x, y, xw, 36).build());
     }

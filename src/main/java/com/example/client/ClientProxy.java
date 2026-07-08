@@ -1,6 +1,7 @@
 package com.example.client;
 
 import com.example.network.MaidDataPacket;
+import com.example.network.SlotLockResponsePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -19,5 +20,10 @@ public class ClientProxy {
             mc.screen.onClose();
         }
         mc.setScreen(new InfoScreen(packet));
+    }
+
+    public static void onBaubleLockResponse(SlotLockResponsePacket packet) {
+        var mc = Minecraft.getInstance();
+        mc.setScreen(new SlotLockScreen(packet.locks, packet.maidUuid, packet.baubleSlot));
     }
 }

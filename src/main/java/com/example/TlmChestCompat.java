@@ -12,6 +12,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -71,12 +72,14 @@ public class TlmChestCompat {
                     event.setCanceled(true);
                     var tag = bauble.getStackInSlot(i).getTag();
                     double reflectMult = (tag != null && tag.contains("reflectMult")) ? tag.getDouble("reflectMult") : 1.0;
+                    boolean lightning = tag == null || !tag.contains("lightning") || tag.getBoolean("lightning");
                     if (reflectMult > 0) {
                         var src = event.getSource();
                         var attacker = src.getEntity();
                         if (attacker != null && attacker != maid) {
                             attacker.hurt(attacker.damageSources().magic(), event.getAmount() * (float) reflectMult);
                             attacker.setSecondsOnFire((int) Math.round(reflectMult * 2));
+                            if (lightning) { var bolt = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(maid.level()); if (bolt != null) { bolt.moveTo(attacker.getX(), attacker.getY(), attacker.getZ()); maid.level().addFreshEntity(bolt); } }
                         }
                     }
                     return;
@@ -92,6 +95,7 @@ public class TlmChestCompat {
                 // Reflection damage
                 var tag = getPlayerBaubleTag(player);
                 double reflectMult = (tag != null && tag.contains("reflectMult")) ? tag.getDouble("reflectMult") : 1.0;
+                boolean lightning = tag == null || !tag.contains("lightning") || tag.getBoolean("lightning");
                 if (reflectMult > 0) {
                     var src = event.getSource();
                     var attacker = src.getEntity();
@@ -103,7 +107,25 @@ public class TlmChestCompat {
                         attacker.hurt(attacker.damageSources().magic(), dmg * 0.5f);           // magic
                         attacker.hurt(attacker.damageSources().explosion(null, attacker), dmg * 0.3f);  // explosion
                         attacker.setSecondsOnFire((int) Math.round(reflectMult * 2));         // fire duration
+                        if (lightning) { var bolt = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(attacker.level()); if (bolt != null) { bolt.moveTo(attacker.getX(), attacker.getY(), attacker.getZ()); attacker.level().addFreshEntity(bolt); } }
                     }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onKnockBack(LivingKnockBackEvent event) {
+        var entity = event.getEntity();
+        if (entity instanceof Player player && hasPlayerBauble(player)) {
+            event.setStrength(0);
+        } else if (entity instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid maid) {
+            var bauble = maid.getMaidBauble();
+            for (int i = 0; i < bauble.getSlots(); i++) {
+                var item = bauble.getStackInSlot(i).getItem();
+                if (item == ModItems.TRUE_IMMORTAL_BAUBLE.get() || item == ModItems.MAID_REFLECT_BAUBLE.get()) {
+                    event.setStrength(0);
+                    return;
                 }
             }
         }
@@ -114,7 +136,20 @@ public class TlmChestCompat {
         if (event.phase != TickEvent.Phase.END) return;
         var player = event.player;
         if (player.level().isClientSide) return;
-        if (!hasPlayerBauble(player)) return;
+
+        boolean hasBauble = hasPlayerBauble(player);
+
+        // Knockback resistance: set to 1.0 when equipped, restore when removed
+        var kbAttr = player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (kbAttr != null) {
+            if (hasBauble) {
+                kbAttr.setBaseValue(1.0);
+            } else if (kbAttr.getBaseValue() >= 1.0) {
+                kbAttr.setBaseValue(0.0);
+            }
+        }
+
+        if (!hasBauble) return;
 
         var tag = getPlayerBaubleTag(player);
         if (tag == null) return;
@@ -137,12 +172,6 @@ public class TlmChestCompat {
         if (tag.getBoolean("nightVision")) {
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.NIGHT_VISION, 300, 0, false, false));
-        }
-
-        // 2b. Knockback resistance (always on, forced every tick)
-        var kbAttr = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
-        if (kbAttr != null) {
-            kbAttr.setBaseValue(1.0);
         }
 
         // 3. Remove all negative effects
@@ -303,8 +332,9 @@ public class TlmChestCompat {
                                 if (taken.isEmpty()) continue;
 
                                 var maidInv = maid.getMaidInv();
+                                boolean[] locks = SlotLockHelper.getLocks(maid);
                                 for (int k = 0; k < maidInv.getSlots(); k++) {
-                                    if (maidInv.getStackInSlot(k).isEmpty()) {
+                                    if (maidInv.getStackInSlot(k).isEmpty() && !(k < locks.length && locks[k])) {
                                         maidInv.setStackInSlot(k, taken);
                                         event.setRequestedItem(taken);
                                         return;
@@ -383,6 +413,18 @@ public class TlmChestCompat {
         pkt.reach = d.getDouble("attrReach");
         pkt.speed = d.getDouble("attrSpeed");
         pkt.regenPct = d.getDouble("attrRegenPct");
+
+        // Check which baubles are equipped
+        int flags = 0;
+        if (maid instanceof com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid em) {
+            var bh = em.getMaidBauble();
+            for (int i = 0; i < bh.getSlots(); i++) {
+                var item = bh.getStackInSlot(i).getItem();
+                if (item == ModItems.BACKPACK_BAUBLE.get()) flags |= 1;
+                if (item == ModItems.STORAGE_MARKER.get()) flags |= 2;
+            }
+        }
+        pkt.equippedBaubles = flags;
 
         ModNetwork.sendToPlayer(player, pkt);
     }

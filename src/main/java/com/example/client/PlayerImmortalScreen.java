@@ -11,21 +11,23 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class PlayerImmortalScreen extends Screen {
-    private static final int PW = 320, PH = 440, BH = 36, BH2 = 50;
+    private static final int PW = 320, PH = 504, BH = 36, BH2 = 50;
     private double flightSpeed = 1.0;
     private boolean flightEnabled = true;
     private boolean slowFalling = false;
     private boolean nightVision = false;
+    private boolean lightning = true;
     private double reflectMult = 1.0;
     private int px, py;
-    private Button btnFlight, btnSlow, btnNight, speedVal, reflectVal;
+    private Button btnFlight, btnSlow, btnNight, btnLightning, speedVal, reflectVal;
 
-    public PlayerImmortalScreen(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, double reflectMult) {
+    public PlayerImmortalScreen(double flightSpeed, boolean flightEnabled, boolean slowFalling, boolean nightVision, boolean lightning, double reflectMult) {
         super(Component.literal(""));
         this.flightSpeed = flightSpeed;
         this.flightEnabled = flightEnabled;
         this.slowFalling = slowFalling;
         this.nightVision = nightVision;
+        this.lightning = lightning;
         this.reflectMult = reflectMult;
     }
 
@@ -71,7 +73,14 @@ public class PlayerImmortalScreen extends Screen {
             b.setMessage(lbl(nightVision));
         });
 
-        // Row 5: Reflect
+        // Row 5: Lightning
+        y += 64;
+        btnLightning = addRowBtn(x, y, "闪电", lightning, b -> {
+            lightning = !lightning;
+            b.setMessage(lbl(lightning));
+        });
+
+        // Row 6: Reflect
         y += 64;
         addLabel("反伤倍率", x, y);
         addRenderableWidget(Button.builder(Component.literal("\u00A7c\u00A7l-"), b -> {
@@ -85,10 +94,10 @@ public class PlayerImmortalScreen extends Screen {
             reflectVal.setMessage(Component.literal("\u00A70\u00A7l" + nf(reflectMult)));
         }).bounds(x + 224, y, 50, BH).build());
 
-        // Row 6: Save
+        // Row 7: Save
         y += 58;
         addRenderableWidget(Button.builder(Component.literal("\u00A74\u00A7l\u2714 保存"), b -> {
-            ModNetwork.CHANNEL.sendToServer(new PlayerImmortalConfigPacket(flightSpeed, flightEnabled, slowFalling, nightVision, reflectMult));
+            ModNetwork.CHANNEL.sendToServer(new PlayerImmortalConfigPacket(flightSpeed, flightEnabled, slowFalling, nightVision, lightning, reflectMult));
             onClose();
         }).bounds(x, y, xw, BH).build());
     }

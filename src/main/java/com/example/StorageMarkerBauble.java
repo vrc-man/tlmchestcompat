@@ -49,7 +49,7 @@ public class StorageMarkerBauble implements IMaidBauble {
         Set<String> filter = readFilter(tag);
 
         // 1. Deposit: maid → container
-        boolean[] locks = SlotLockHelper.getLocks(maid);
+        boolean[] locks = SlotLockHelper.getLocks(baubleItem);
         for (int i = 0; i < maidInv.getSlots(); i++) {
             if (i < locks.length && locks[i]) continue;
             var stack = maidInv.getStackInSlot(i);
@@ -70,7 +70,7 @@ public class StorageMarkerBauble implements IMaidBauble {
                 if (!passFilter(stack, filter, filterType)) continue;
                 var taken = containerInv.extractItem(i, 1, false);
                 if (taken.isEmpty()) continue;
-                if (tryAddToMaid(maidInv, taken)) return;
+                if (tryAddToMaid(maidInv, taken, maid, baubleItem)) return;
                 containerInv.insertItem(i, taken, false);
                 return;
             }
@@ -83,7 +83,7 @@ public class StorageMarkerBauble implements IMaidBauble {
             if (stack.getItem().isEdible()) continue; // food handled above
             if (!passFilter(stack, filter, filterType)) continue;
 
-            int maidCount = countInMaid(maidInv, stack);
+            int maidCount = countInMaid(maidInv, stack, maid, baubleItem);
             if (maidCount >= 4) continue; // enough in inventory
 
             int needed = Math.min(16 - maidCount, stack.getCount());
@@ -91,24 +91,28 @@ public class StorageMarkerBauble implements IMaidBauble {
 
             var taken = containerInv.extractItem(i, needed, false);
             if (taken.isEmpty()) continue;
-            if (!tryAddToMaid(maidInv, taken)) {
+            if (!tryAddToMaid(maidInv, taken, maid, baubleItem)) {
                 containerInv.insertItem(i, taken, false);
             }
         }
     }
 
-    private int countInMaid(net.minecraftforge.items.ItemStackHandler inv, ItemStack stack) {
+    private int countInMaid(net.minecraftforge.items.ItemStackHandler inv, ItemStack stack, EntityMaid maid, ItemStack baubleItem) {
+        boolean[] locks = SlotLockHelper.getLocks(baubleItem);
         int count = 0;
         for (int i = 0; i < inv.getSlots(); i++) {
+            if (i < locks.length && locks[i]) continue;
             var s = inv.getStackInSlot(i);
             if (!s.isEmpty() && ItemStack.isSameItem(s, stack)) count += s.getCount();
         }
         return count;
     }
 
-    private boolean tryAddToMaid(net.minecraftforge.items.ItemStackHandler maidInv, ItemStack stack) {
-        // Try merging with existing stacks first
+    private boolean tryAddToMaid(net.minecraftforge.items.ItemStackHandler maidInv, ItemStack stack, EntityMaid maid, ItemStack baubleItem) {
+        boolean[] locks = SlotLockHelper.getLocks(baubleItem);
+        // Try merging with existing stacks first (skip locked slots)
         for (int i = 0; i < maidInv.getSlots(); i++) {
+            if (i < locks.length && locks[i]) continue;
             var s = maidInv.getStackInSlot(i);
             if (!s.isEmpty() && ItemStack.isSameItem(s, stack) && s.getCount() < s.getMaxStackSize()) {
                 int space = s.getMaxStackSize() - s.getCount();
@@ -118,8 +122,9 @@ public class StorageMarkerBauble implements IMaidBauble {
                 if (stack.isEmpty()) return true;
             }
         }
-        // Find empty slot
+        // Find empty slot (skip locked slots)
         for (int i = 0; i < maidInv.getSlots(); i++) {
+            if (i < locks.length && locks[i]) continue;
             if (maidInv.getStackInSlot(i).isEmpty()) {
                 maidInv.setStackInSlot(i, stack);
                 return true;

@@ -9,17 +9,20 @@ import java.util.function.Supplier;
 
 public class MaidReflectPacket {
     public final double reflectMult;
+    public final boolean lightning;
 
-    public MaidReflectPacket(double reflectMult) {
+    public MaidReflectPacket(double reflectMult, boolean lightning) {
         this.reflectMult = reflectMult;
+        this.lightning = lightning;
     }
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeDouble(reflectMult);
+        buf.writeBoolean(lightning);
     }
 
     public static MaidReflectPacket decode(FriendlyByteBuf buf) {
-        return new MaidReflectPacket(buf.readDouble());
+        return new MaidReflectPacket(buf.readDouble(), buf.readBoolean());
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -38,6 +41,7 @@ public class MaidReflectPacket {
 
             var tag = stack.getOrCreateTag();
             tag.putDouble("reflectMult", reflectMult);
+            tag.putBoolean("lightning", lightning);
         });
         ctx.get().setPacketHandled(true);
     }
